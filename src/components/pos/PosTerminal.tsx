@@ -31,6 +31,7 @@ import {
   ShoppingBag,
   ChevronUp,
   X,
+  ArrowRight,
 } from 'lucide-react';
 
 export const PosTerminal: React.FC = () => {
@@ -276,16 +277,16 @@ export const PosTerminal: React.FC = () => {
           </div>
         </div>
 
-        {/* Product Grid Area (Scrollable) */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4">
+        {/* Product Grid Area (Scrollable with bottom padding for mobile fixed bar) */}
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 pb-28 sm:pb-32 lg:pb-4">
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 pb-28 sm:pb-32 lg:pb-4">
               {[1, 2, 3, 4, 5, 6].map((sk) => (
                 <div key={sk} className="h-60 sm:h-64 rounded-2xl bg-slate-800/50 animate-pulse border border-slate-700/40" />
               ))}
             </div>
           ) : filteredProducts.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-500">
+            <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-500 pb-28 lg:pb-8">
               <Coffee className="w-12 h-12 mb-2 opacity-30 text-emerald-400" />
               <p className="font-semibold text-slate-300">Tidak ada produk yang sesuai</p>
               <p className="text-xs text-slate-500 mt-1">
@@ -293,35 +294,13 @@ export const PosTerminal: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 pb-20 lg:pb-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 pb-28 sm:pb-32 lg:pb-4">
               {filteredProducts.map((prod) => (
                 <ProductCard key={prod.id} product={prod} onAddToCart={addItem} />
               ))}
             </div>
           )}
         </div>
-
-        {/* Mobile Floating Cart Button / Bar (Muncul jika ada item di HP) */}
-        {items.length > 0 && (
-          <div className="lg:hidden p-3 bg-slate-900/95 border-t border-slate-800 backdrop-blur-md shrink-0 w-full z-20">
-            <button
-              type="button"
-              onClick={() => setIsMobileCartOpen(true)}
-              className="w-full h-12 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm tracking-wide shadow-lg shadow-emerald-500/25 flex items-center justify-between transition-all active:scale-[0.99]"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-slate-950/20 flex items-center justify-center">
-                  <ShoppingBag className="w-4 h-4" />
-                </div>
-                <span>{items.reduce((s, i) => s + i.quantity, 0)} Item Dipilih</span>
-              </div>
-              <div className="flex items-center gap-2 font-mono-numbers">
-                <span className="text-sm font-extrabold">{formatRupiah(totalAmount)}</span>
-                <ChevronUp className="w-4 h-4" />
-              </div>
-            </button>
-          </div>
-        )}
       </div>
 
       {/* ------------------------------------------------------------- */}
@@ -372,6 +351,47 @@ export const PosTerminal: React.FC = () => {
                 isSavingOpenTab={isSavingOpenTab}
               />
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------- */}
+      {/* FIXED MOBILE CHECKOUT BAR (Hanya di Layar HP saat ada item)   */}
+      {/* Fixed di bottom-0, z-40, safe-area-inset-bottom, min h-48px   */}
+      {/* ------------------------------------------------------------- */}
+      {items.length > 0 && !isMobileCartOpen && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 dark:bg-slate-900/95 light:bg-white/95 backdrop-blur-md border-t border-slate-800 dark:border-slate-800 light:border-slate-200 px-3 py-2.5 sm:px-4 sm:py-3 shadow-2xl transition-all pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
+          <div className="flex items-center justify-between gap-2.5 max-w-lg mx-auto">
+            {/* Opsi Lihat Keranjang / Detail Item */}
+            <button
+              type="button"
+              onClick={() => setIsMobileCartOpen(true)}
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl hover:bg-slate-800/60 dark:hover:bg-slate-800/60 light:hover:bg-slate-100 transition-colors text-left shrink-0 active:scale-[0.98]"
+              title="Lihat rincian keranjang pesanan"
+            >
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+                <ShoppingBag className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-[11px] font-medium text-slate-400 dark:text-slate-400 light:text-slate-500 flex items-center gap-1">
+                  <span>{items.reduce((s, i) => s + i.quantity, 0)} Item</span>
+                  <ChevronUp className="w-3 h-3 text-slate-500" />
+                </div>
+                <div className="text-sm font-extrabold font-mono-numbers text-white dark:text-white light:text-slate-900 leading-tight">
+                  {formatRupiah(totalAmount)}
+                </div>
+              </div>
+            </button>
+
+            {/* Tombol Utama Bayar Sekarang (Touch Target min 48px, Emerald Green) */}
+            <button
+              type="button"
+              onClick={() => setIsPaymentOpen(true)}
+              className="flex-1 min-h-[48px] px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-bold text-xs sm:text-sm tracking-wide shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 transition-all"
+            >
+              <span>BAYAR SEKARANG</span>
+              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+            </button>
           </div>
         </div>
       )}

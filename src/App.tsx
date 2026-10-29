@@ -47,7 +47,7 @@ function MainApp() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full max-w-full overflow-x-hidden overflow-y-hidden bg-slate-950 text-slate-100 select-none">
+    <div className="flex flex-col h-screen h-[100dvh] w-full max-w-full overflow-x-hidden overflow-y-hidden bg-slate-950 text-slate-100 select-none">
       {/* 3-Zone Clean Header */}
       <Header activeView={activeView} setActiveView={setActiveView} />
 

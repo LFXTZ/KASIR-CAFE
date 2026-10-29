@@ -259,7 +259,7 @@ export const StickyCart: React.FC<StickyCartProps> = ({
       </div>
 
       {/* Panel Bottom: Calculation & Primary Actions */}
-      <div className="p-4 border-t border-slate-700/60 dark:border-slate-700/60 light:border-slate-200 bg-slate-900/80 dark:bg-slate-900/80 light:bg-slate-50 space-y-3 shrink-0">
+      <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] border-t border-slate-700/60 dark:border-slate-700/60 light:border-slate-200 bg-slate-900/80 dark:bg-slate-900/80 light:bg-slate-50 space-y-3 shrink-0">
         {/* Cost Breakdown */}
         <div className="space-y-1.5 text-xs">
           <div className="flex items-center justify-between text-slate-400">
