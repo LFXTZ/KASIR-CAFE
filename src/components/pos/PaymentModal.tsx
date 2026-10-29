@@ -8,6 +8,7 @@ import { useCart } from '../../context/CartContext.tsx';
 import { useOfflineSync } from '../../context/OfflineSyncContext.tsx';
 import { formatRupiah } from '../../utils/formatters.ts';
 import type { PaymentMethod, Order } from '../../types/pos.ts';
+import { submitCheckoutApi } from '../../services/storageService.ts';
 import {
   X,
   Banknote,
@@ -156,25 +157,20 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onS
       return;
     }
 
-    // Call Express Checkout API (with Atomic Stock Locking)
+    // Use submitCheckoutApi which handles GitHub Pages LocalStorage & Express API transparently
     try {
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const data = await submitCheckoutApi(payload);
 
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        // Handle Atomic Stock Failure (Rollback notice)
+      if (!data.success || !data.order) {
         setErrorMessage(data.message || data.error || 'Gagal memproses transaksi.');
         setIsProcessing(false);
         return;
       }
 
-      // If QRIS was used, send automated webhook confirmation
-      if (activeMethod === 'qris') {
+      // If QRIS was used on Express, notify webhook
+      if (activeMethod === 'qris' && !isOnline) {
+        // Automatically approved
+      } else if (activeMethod === 'qris') {
         try {
           await fetch('/api/webhook/qris-callback', {
             method: 'POST',
@@ -185,7 +181,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onS
             }),
           });
         } catch {
-          // Non-blocking for UI
+          // Non-blocking
         }
       }
 

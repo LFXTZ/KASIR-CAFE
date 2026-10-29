@@ -14,11 +14,17 @@ import { TableManagementView } from './components/tables/TableManagementView.tsx
 import { KitchenDisplaySystem } from './components/kds/KitchenDisplaySystem.tsx';
 import { OwnerDashboard } from './components/dashboard/OwnerDashboard.tsx';
 import { LoginView } from './components/auth/LoginView.tsx';
+import { initializeStorage } from './services/storageService.ts';
 
 function MainApp() {
   const { isAuthenticated, role } = useAuth();
   const { setSelectedTable } = useCart();
   const [activeView, setActiveView] = useState<ActiveView>('pos');
+
+  // Explicitly initialize LocalStorage on initial mount
+  useEffect(() => {
+    initializeStorage();
+  }, []);
 
   // Sync default view when role switches
   useEffect(() => {

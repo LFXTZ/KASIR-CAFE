@@ -22,6 +22,14 @@ import {
   ShoppingBag,
   Layers,
 } from 'lucide-react';
+import {
+  fetchAnalyticsApi,
+  fetchProductsApi,
+  fetchCategoriesApi,
+  fetchKdsOrdersApi,
+  saveLocalProducts,
+  getLocalProducts,
+} from '../../services/storageService.ts';
 
 export const OwnerDashboard: React.FC = () => {
   const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
@@ -59,19 +67,31 @@ export const OwnerDashboard: React.FC = () => {
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true);
-      const [anRes, prodRes, catRes, userRes, ordRes] = await Promise.all([
-        fetch('/api/analytics').then((r) => r.json()),
-        fetch('/api/products').then((r) => r.json()),
-        fetch('/api/categories').then((r) => r.json()),
-        fetch('/api/users').then((r) => r.json()),
-        fetch('/api/orders').then((r) => r.json()),
+      const [anData, prodData, catData, ordData] = await Promise.all([
+        fetchAnalyticsApi(),
+        fetchProductsApi(),
+        fetchCategoriesApi(),
+        fetchKdsOrdersApi(),
       ]);
 
-      if (anRes.success) setAnalytics(anRes.analytics);
-      if (prodRes.success) setProducts(prodRes.products);
-      if (catRes.success) setCategories(catRes.categories);
-      if (userRes.success) setUsers(userRes.users);
-      if (ordRes.success) setOrders(ordRes.orders);
+      setAnalytics(anData);
+      setProducts(prodData);
+      setCategories(catData);
+      setOrders(ordData);
+
+      // Fetch users
+      try {
+        const uRes = await fetch('/api/users');
+        const uData = await uRes.json();
+        if (uData.success) setUsers(uData.users);
+      } catch {
+        // Fallback demo users
+        setUsers([
+          { id: 'usr-owner-01', name: 'Rifqy Pratama', email: 'owner@elexacafe.id', role: 'owner', created_at: new Date().toISOString() },
+          { id: 'usr-cashier-01', name: 'Dewi Lestari', email: 'kasir@elexacafe.id', role: 'cashier', created_at: new Date().toISOString() },
+          { id: 'usr-kitchen-01', name: 'Bima Satria', email: 'kitchen@elexacafe.id', role: 'kitchen', created_at: new Date().toISOString() },
+        ]);
+      }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
@@ -114,22 +134,44 @@ export const OwnerDashboard: React.FC = () => {
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const url = editingProduct ? `/api/products/${editingProduct.id}` : '/api/products';
-      const method = editingProduct ? 'PUT' : 'POST';
+      const currentProducts = getLocalProducts();
+      let updated: Product[];
 
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(productForm),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setIsProductModalOpen(false);
-        fetchDashboardData();
+      if (editingProduct) {
+        updated = currentProducts.map((p) =>
+          p.id === editingProduct.id
+            ? {
+                ...p,
+                name: productForm.name,
+                category_id: productForm.category_id,
+                sku: productForm.sku,
+                price: Number(productForm.price),
+                cost_price: Number(productForm.cost_price),
+                stock: Number(productForm.stock),
+                updated_at: new Date().toISOString(),
+              }
+            : p
+        );
       } else {
-        alert(data.message || 'Gagal menyimpan produk');
+        const newProd: Product = {
+          id: `prod-${Date.now().toString(36)}`,
+          name: productForm.name,
+          category_id: productForm.category_id,
+          sku: productForm.sku,
+          price: Number(productForm.price),
+          cost_price: Number(productForm.cost_price),
+          stock: Number(productForm.stock),
+          image_url: productForm.image_url || '/src/assets/images/hero_iced_latte_1793273612918.jpg',
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        updated = [newProd, ...currentProducts];
       }
+
+      saveLocalProducts(updated);
+      setIsProductModalOpen(false);
+      fetchDashboardData();
     } catch (err: any) {
       alert(err.message || 'Kesalahan saat menyimpan');
     }
@@ -138,11 +180,10 @@ export const OwnerDashboard: React.FC = () => {
   const handleDeleteProduct = async (id: string) => {
     if (!confirm('Apakah Anda yakin ingin menghapus produk ini?')) return;
     try {
-      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) {
-        fetchDashboardData();
-      }
+      const currentProducts = getLocalProducts();
+      const updated = currentProducts.filter((p) => p.id !== id);
+      saveLocalProducts(updated);
+      fetchDashboardData();
     } catch (err) {
       console.error(err);
     }

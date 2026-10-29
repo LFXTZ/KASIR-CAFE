@@ -20,6 +20,8 @@ import {
   DollarSign,
 } from 'lucide-react';
 
+import { fetchTablesApi, closeTableTabApi, saveLocalTables } from '../../services/storageService.ts';
+
 interface TableManagementViewProps {
   onStartOrderForTable: (tableId: string, tableNumber: string) => void;
 }
@@ -39,11 +41,8 @@ export const TableManagementView: React.FC<TableManagementViewProps> = ({ onStar
   const fetchTables = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch('/api/tables');
-      const data = await res.json();
-      if (data.success) {
-        setTables(data.tables);
-      }
+      const data = await fetchTablesApi();
+      setTables(data);
     } catch (err) {
       console.error('Failed to load tables:', err);
     } finally {
@@ -57,19 +56,13 @@ export const TableManagementView: React.FC<TableManagementViewProps> = ({ onStar
 
   const handleUpdateTableStatus = async (tableId: string, status: TableStatus) => {
     try {
-      const res = await fetch(`/api/tables/${tableId}/status`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setTables((prev) =>
-          prev.map((t) => (t.id === tableId ? { ...t, status: data.table.status, current_order_id: data.table.current_order_id } : t))
-        );
-        if (selectedTableDetails?.id === tableId) {
-          setSelectedTableDetails(null);
-        }
+      const updated = tables.map((t) =>
+        t.id === tableId ? { ...t, status, current_order_id: status === 'available' ? null : t.current_order_id } : t
+      );
+      setTables(updated);
+      saveLocalTables(updated);
+      if (selectedTableDetails?.id === tableId) {
+        setSelectedTableDetails(null);
       }
     } catch (err) {
       console.error('Failed to update table status:', err);
@@ -81,24 +74,15 @@ export const TableManagementView: React.FC<TableManagementViewProps> = ({ onStar
     setIsSettlingTab(true);
 
     try {
-      const res = await fetch(`/api/tables/${selectedTableDetails.id}/close-tab`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          payment_method: settleMethod,
-          cash_tendered: settleTendered || selectedTableDetails.active_order?.total_amount,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setSettleFeedback(`Tab Meja ${selectedTableDetails.table_number} berhasil dilunasi! Meja kembali kosong.`);
-        setTimeout(() => setSettleFeedback(null), 4000);
-        setSelectedTableDetails(null);
-        fetchTables();
-      } else {
-        alert(data.message || 'Gagal melunasi tab');
-      }
+      await closeTableTabApi(
+        selectedTableDetails.id,
+        settleMethod,
+        settleTendered || selectedTableDetails.active_order?.total_amount
+      );
+      setSettleFeedback(`Tab Meja ${selectedTableDetails.table_number} berhasil dilunasi! Meja kembali kosong.`);
+      setTimeout(() => setSettleFeedback(null), 4000);
+      setSelectedTableDetails(null);
+      fetchTables();
     } catch (err: any) {
       alert(err.message || 'Kesalahan saat pelunasan');
     } finally {

@@ -22,7 +22,9 @@ import {
   LogOut,
   ChevronDown,
   UserCheck,
+  RotateCcw,
 } from 'lucide-react';
+import { resetToDefaultData, isStaticHost } from '../../services/storageService.ts';
 
 export type ActiveView = 'pos' | 'tables' | 'kds' | 'dashboard';
 
@@ -219,6 +221,22 @@ export const Header: React.FC<HeaderProps> = ({ activeView, setActiveView }) => 
                 <span>Barista & Dapur (KDS)</span>
                 {role === 'kitchen' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
               </button>
+
+              <div className="pt-1.5 mt-1 border-t border-slate-700/60 dark:border-slate-700/60 light:border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm('Kembalikan semua katalog produk, stok, dan data ke kondisi awal default?')) {
+                      resetToDefaultData();
+                      window.location.reload();
+                    }
+                  }}
+                  className="w-full text-left px-3 py-1.5 rounded-lg text-[11px] text-amber-400 hover:bg-amber-500/10 transition-colors flex items-center justify-between"
+                >
+                  <span>Reset Data Default</span>
+                  <RotateCcw className="w-3 h-3" />
+                </button>
+              </div>
             </div>
           )}
         </div>

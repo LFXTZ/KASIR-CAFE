@@ -6,6 +6,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useCart } from '../../context/CartContext.tsx';
 import type { Product, Category, CafeTable, Order } from '../../types/pos.ts';
+import {
+  fetchProductsApi,
+  fetchCategoriesApi,
+  fetchTablesApi,
+  submitCheckoutApi,
+} from '../../services/storageService.ts';
 import { ProductCard } from './ProductCard.tsx';
 import { StickyCart } from './StickyCart.tsx';
 import { PaymentModal } from './PaymentModal.tsx';
@@ -30,7 +36,6 @@ export const PosTerminal: React.FC = () => {
     selectedTableId,
     customerName,
     discountAmount,
-    totalAmount,
     addItem,
     setSelectedTable,
     clearCart,
@@ -52,20 +57,20 @@ export const PosTerminal: React.FC = () => {
   const [openTabFeedback, setOpenTabFeedback] = useState<string | null>(null);
   const [isSavingOpenTab, setIsSavingOpenTab] = useState<boolean>(false);
 
-  // Fetch initial master data
+  // Initial load: uses storageService which guarantees products are never empty
   useEffect(() => {
     async function loadData() {
       try {
         setIsLoading(true);
-        const [prodRes, catRes, tblRes] = await Promise.all([
-          fetch('/api/products').then((r) => r.json()),
-          fetch('/api/categories').then((r) => r.json()),
-          fetch('/api/tables').then((r) => r.json()),
+        const [prodList, catList, tblList] = await Promise.all([
+          fetchProductsApi(),
+          fetchCategoriesApi(),
+          fetchTablesApi(),
         ]);
 
-        if (prodRes.success) setProducts(prodRes.products);
-        if (catRes.success) setCategories(catRes.categories);
-        if (tblRes.success) setTables(tblRes.tables);
+        setProducts(prodList);
+        setCategories(catList);
+        setTables(tblList);
       } catch (err) {
         console.error('Failed to load POS master data:', err);
       } finally {
@@ -121,7 +126,7 @@ export const PosTerminal: React.FC = () => {
       const payload = {
         customer_name: customerName || 'Tamu Meja',
         order_type: orderType,
-        table_id: selectedTableId || 'tbl-01', // fallback to Meja 01 if none selected
+        table_id: selectedTableId || 'tbl-01',
         payment_method: 'unpaid' as const,
         payment_status: 'pending' as const,
         order_status: 'processing' as const,
@@ -133,19 +138,18 @@ export const PosTerminal: React.FC = () => {
         discount_amount: discountAmount,
       };
 
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      const data = await submitCheckoutApi(payload);
 
-      const data = await res.json();
-      if (data.success) {
+      if (data.success && data.order) {
         setOpenTabFeedback(`Pesanan tersimpan di Meja (${data.order.order_number}). Masuk ke KDS Dapur!`);
         setTimeout(() => setOpenTabFeedback(null), 4000);
         clearCart();
+        // Refresh products and tables
+        const [updatedProds, updatedTables] = await Promise.all([fetchProductsApi(), fetchTablesApi()]);
+        setProducts(updatedProds);
+        setTables(updatedTables);
       } else {
-        alert(data.message || 'Gagal menyimpan pesanan ke meja');
+        alert(data.message || data.error || 'Gagal menyimpan pesanan ke meja');
       }
     } catch (err: any) {
       alert(err.message || 'Kesalahan saat menyimpan pesanan');
@@ -154,15 +158,12 @@ export const PosTerminal: React.FC = () => {
     }
   };
 
-  const handleCheckoutSuccess = (order: Order) => {
+  const handleCheckoutSuccess = async (order: Order) => {
     setLastCompletedOrder(order);
     setIsReceiptOpen(true);
     // Refresh products to reflect decremented stock
-    fetch('/api/products')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.success) setProducts(data.products);
-      });
+    const updated = await fetchProductsApi();
+    setProducts(updated);
   };
 
   const getCategoryIcon = (slug: string) => {

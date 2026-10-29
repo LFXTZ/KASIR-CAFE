@@ -18,6 +18,8 @@ import {
   ArrowRight,
 } from 'lucide-react';
 
+import { fetchKdsOrdersApi, updateKdsStatusApi } from '../../services/storageService.ts';
+
 export const KitchenDisplaySystem: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all');
@@ -27,11 +29,8 @@ export const KitchenDisplaySystem: React.FC = () => {
   const fetchOrders = async () => {
     try {
       setIsRefreshing(true);
-      const res = await fetch('/api/kds/orders');
-      const data = await res.json();
-      if (data.success) {
-        setOrders(data.orders);
-      }
+      const data = await fetchKdsOrdersApi();
+      setOrders(data);
     } catch (err) {
       console.error('Failed to load KDS orders:', err);
     } finally {
@@ -42,24 +41,16 @@ export const KitchenDisplaySystem: React.FC = () => {
 
   useEffect(() => {
     fetchOrders();
-    // Auto polling every 8 seconds for real-time kitchen updates
     const interval = setInterval(fetchOrders, 8000);
     return () => clearInterval(interval);
   }, []);
 
   const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
     try {
-      const res = await fetch(`/api/kds/orders/${orderId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setOrders((prev) =>
-          prev.map((o) => (o.id === orderId ? { ...o, order_status: newStatus } : o))
-        );
-      }
+      await updateKdsStatusApi(orderId, newStatus);
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, order_status: newStatus } : o))
+      );
     } catch (err) {
       console.error('Failed to update ticket status:', err);
     }
