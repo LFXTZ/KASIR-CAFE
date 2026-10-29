@@ -1,0 +1,335 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { useCart } from '../../context/CartContext.tsx';
+import type { Product, Category, CafeTable, Order } from '../../types/pos.ts';
+import { ProductCard } from './ProductCard.tsx';
+import { StickyCart } from './StickyCart.tsx';
+import { PaymentModal } from './PaymentModal.tsx';
+import { ReceiptModal } from './ReceiptModal.tsx';
+import { TablePickerModal } from './TablePickerModal.tsx';
+import {
+  Search,
+  Barcode,
+  Layers,
+  Sparkles,
+  Coffee,
+  CupSoda,
+  Croissant,
+  Package,
+  CheckCircle2,
+} from 'lucide-react';
+
+export const PosTerminal: React.FC = () => {
+  const {
+    items,
+    orderType,
+    selectedTableId,
+    customerName,
+    discountAmount,
+    totalAmount,
+    addItem,
+    setSelectedTable,
+    clearCart,
+  } = useCart();
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [tables, setTables] = useState<CafeTable[]>([]);
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [inStockOnly, setInStockOnly] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Modals
+  const [isPaymentOpen, setIsPaymentOpen] = useState<boolean>(false);
+  const [isReceiptOpen, setIsReceiptOpen] = useState<boolean>(false);
+  const [isTablePickerOpen, setIsTablePickerOpen] = useState<boolean>(false);
+  const [lastCompletedOrder, setLastCompletedOrder] = useState<Order | null>(null);
+  const [openTabFeedback, setOpenTabFeedback] = useState<string | null>(null);
+  const [isSavingOpenTab, setIsSavingOpenTab] = useState<boolean>(false);
+
+  // Fetch initial master data
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setIsLoading(true);
+        const [prodRes, catRes, tblRes] = await Promise.all([
+          fetch('/api/products').then((r) => r.json()),
+          fetch('/api/categories').then((r) => r.json()),
+          fetch('/api/tables').then((r) => r.json()),
+        ]);
+
+        if (prodRes.success) setProducts(prodRes.products);
+        if (catRes.success) setCategories(catRes.categories);
+        if (tblRes.success) setTables(tblRes.tables);
+      } catch (err) {
+        console.error('Failed to load POS master data:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  // Filter products by category, search query (name / SKU), and stock
+  const filteredProducts = useMemo(() => {
+    return products.filter((prod) => {
+      // Category filter
+      if (activeCategory !== 'all' && prod.category_id !== activeCategory) {
+        return false;
+      }
+      // Search query filter (Name or SKU)
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim();
+        const matchesName = prod.name.toLowerCase().includes(query);
+        const matchesSku = prod.sku.toLowerCase().includes(query);
+        if (!matchesName && !matchesSku) return false;
+      }
+      // Stock filter
+      if (inStockOnly && prod.stock <= 0) {
+        return false;
+      }
+      return true;
+    });
+  }, [products, activeCategory, searchQuery, inStockOnly]);
+
+  // Handle Quick Barcode Scanner (Press Enter in search bar to add matching item)
+  const handleBarcodeSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      const exactMatch = products.find(
+        (p) =>
+          p.sku.toLowerCase() === searchQuery.toLowerCase().trim() ||
+          p.name.toLowerCase() === searchQuery.toLowerCase().trim()
+      );
+      if (exactMatch && exactMatch.stock > 0) {
+        addItem(exactMatch);
+        setSearchQuery('');
+      }
+    }
+  };
+
+  // Save Open Tab (Pay Later / Store to Table)
+  const handleSaveOpenTab = async () => {
+    if (items.length === 0) return;
+    setIsSavingOpenTab(true);
+
+    try {
+      const payload = {
+        customer_name: customerName || 'Tamu Meja',
+        order_type: orderType,
+        table_id: selectedTableId || 'tbl-01', // fallback to Meja 01 if none selected
+        payment_method: 'unpaid' as const,
+        payment_status: 'pending' as const,
+        order_status: 'processing' as const,
+        items: items.map((i) => ({
+          product_id: i.product.id,
+          quantity: i.quantity,
+          notes: i.notes || undefined,
+        })),
+        discount_amount: discountAmount,
+      };
+
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setOpenTabFeedback(`Pesanan tersimpan di Meja (${data.order.order_number}). Masuk ke KDS Dapur!`);
+        setTimeout(() => setOpenTabFeedback(null), 4000);
+        clearCart();
+      } else {
+        alert(data.message || 'Gagal menyimpan pesanan ke meja');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Kesalahan saat menyimpan pesanan');
+    } finally {
+      setIsSavingOpenTab(false);
+    }
+  };
+
+  const handleCheckoutSuccess = (order: Order) => {
+    setLastCompletedOrder(order);
+    setIsReceiptOpen(true);
+    // Refresh products to reflect decremented stock
+    fetch('/api/products')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setProducts(data.products);
+      });
+  };
+
+  const getCategoryIcon = (slug: string) => {
+    switch (slug) {
+      case 'specialty-coffee':
+        return <Coffee className="w-3.5 h-3.5" />;
+      case 'tea-drinks':
+        return <CupSoda className="w-3.5 h-3.5" />;
+      case 'pastry-bakery':
+        return <Croissant className="w-3.5 h-3.5" />;
+      case 'workshop-studio':
+        return <Sparkles className="w-3.5 h-3.5" />;
+      case 'beans-merch':
+        return <Package className="w-3.5 h-3.5" />;
+      default:
+        return <Layers className="w-3.5 h-3.5" />;
+    }
+  };
+
+  return (
+    <div className="flex-1 flex overflow-hidden relative">
+      {/* Feedback Toast */}
+      {openTabFeedback && (
+        <div className="absolute top-4 left-1/3 z-40 bg-amber-500 text-slate-950 px-4 py-2 rounded-xl font-semibold text-xs shadow-xl flex items-center gap-2 animate-bounce">
+          <CheckCircle2 className="w-4 h-4" />
+          <span>{openTabFeedback}</span>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------- */}
+      {/* SISI KIRI (65% LEBAR): CATALOG GRID, SEARCH & TABS             */}
+      {/* ------------------------------------------------------------- */}
+      <div className="w-[65%] flex flex-col h-full bg-slate-900/95 dark:bg-slate-900/95 light:bg-slate-50 border-r border-slate-800 dark:border-slate-800 light:border-slate-200 overflow-hidden">
+        {/* Top Control Bar: Search & Barcode SKU */}
+        <div className="p-4 border-b border-slate-800 dark:border-slate-800 light:border-slate-200 space-y-3 shrink-0">
+          <div className="flex items-center gap-3">
+            {/* Quick Search / Barcode Input */}
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleBarcodeSubmit}
+                placeholder="Cari menu kafe atau scan barcode SKU (Tekan Enter)..."
+                className="w-full h-11 pl-10 pr-10 bg-slate-800/80 dark:bg-slate-800/80 light:bg-white border border-slate-700/60 dark:border-slate-700/60 light:border-slate-300 rounded-xl text-xs text-slate-100 dark:text-slate-100 light:text-slate-900 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" title="Scanner barcode aktif">
+                <Barcode className="w-4 h-4" />
+              </span>
+            </div>
+
+            {/* In-Stock Filter */}
+            <button
+              type="button"
+              onClick={() => setInStockOnly(!inStockOnly)}
+              className={`h-11 px-3.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                inStockOnly
+                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50'
+                  : 'bg-slate-800/60 text-slate-400 border-slate-700/60 hover:text-white'
+              }`}
+            >
+              <span>Hanya Stok Tersedia</span>
+            </button>
+          </div>
+
+          {/* Category Tabs (Segmented Buttons) */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <button
+              type="button"
+              onClick={() => setActiveCategory('all')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                activeCategory === 'all'
+                  ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20 font-bold'
+                  : 'bg-slate-800/60 dark:bg-slate-800/60 light:bg-white text-slate-400 hover:text-white dark:hover:text-white light:hover:text-slate-900 border border-slate-700/50 dark:border-slate-700/50 light:border-slate-200'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Semua Menu</span>
+              <span className="text-[10px] font-mono opacity-80">({products.length})</span>
+            </button>
+
+            {categories.map((cat) => {
+              const count = products.filter((p) => p.category_id === cat.id).length;
+              const isActive = activeCategory === cat.id;
+
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                    isActive
+                      ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20 font-bold'
+                      : 'bg-slate-800/60 dark:bg-slate-800/60 light:bg-white text-slate-400 hover:text-white dark:hover:text-white light:hover:text-slate-900 border border-slate-700/50 dark:border-slate-700/50 light:border-slate-200'
+                  }`}
+                >
+                  {getCategoryIcon(cat.slug)}
+                  <span>{cat.name}</span>
+                  <span className="text-[10px] font-mono opacity-80">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Product Grid Area (Scrollable) */}
+        <div className="flex-1 overflow-y-auto p-4">
+          {isLoading ? (
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5, 6].map((sk) => (
+                <div key={sk} className="h-64 rounded-2xl bg-slate-800/50 animate-pulse border border-slate-700/40" />
+              ))}
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-500">
+              <Coffee className="w-12 h-12 mb-2 opacity-30 text-emerald-400" />
+              <p className="font-semibold text-slate-300">Tidak ada produk yang sesuai</p>
+              <p className="text-xs text-slate-500 mt-1">
+                Coba ubah kata kunci pencarian atau pilih kategori lain.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredProducts.map((prod) => (
+                <ProductCard key={prod.id} product={prod} onAddToCart={addItem} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------- */}
+      {/* SISI KANAN (35% LEBAR): STICKY CART PANEL                      */}
+      {/* ------------------------------------------------------------- */}
+      <div className="w-[35%] h-full">
+        <StickyCart
+          onOpenPayment={() => setIsPaymentOpen(true)}
+          onOpenTablePicker={() => setIsTablePickerOpen(true)}
+          onSaveOpenTab={handleSaveOpenTab}
+          isSavingOpenTab={isSavingOpenTab}
+        />
+      </div>
+
+      {/* Payment Multi-Method Modal */}
+      <PaymentModal
+        isOpen={isPaymentOpen}
+        onClose={() => setIsPaymentOpen(false)}
+        onSuccess={handleCheckoutSuccess}
+      />
+
+      {/* Thermal Receipt Modal */}
+      <ReceiptModal
+        order={lastCompletedOrder}
+        isOpen={isReceiptOpen}
+        onClose={() => setIsReceiptOpen(false)}
+        onNewTransaction={() => setIsReceiptOpen(false)}
+      />
+
+      {/* Table Picker Modal */}
+      <TablePickerModal
+        isOpen={isTablePickerOpen}
+        onClose={() => setIsTablePickerOpen(false)}
+        tables={tables}
+        selectedTableId={selectedTableId}
+        onSelectTable={(id, num) => setSelectedTable(id, num)}
+      />
+    </div>
+  );
+};

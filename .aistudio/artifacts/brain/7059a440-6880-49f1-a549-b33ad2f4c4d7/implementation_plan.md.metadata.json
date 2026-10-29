@@ -1,0 +1,6 @@
+{
+  "summary":  "Revisi rencana implementasi sistem POS ELEXA CAFE dengan penambahan 4 modul utama: Automatic QRIS Simulation & Webhook, Offline-First PWA Sync Manager, Kitchen Display System (KDS) untuk Barista & Dapur, serta Table Management dengan Open Tab. Lengkap dengan skema SQL DDL komprehensif dan RBAC 3-role (Owner, Cashier, Kitchen).",
+  "updatedAt":  "2026-10-29T08:14:32.486968239Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}
