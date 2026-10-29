@@ -1,72 +1,56 @@
-# ELEXA CAFE — Mobile-Responsive Layout & Touch Ergonomics
+# ELEXA CAFE — Non-Overlapping Header & Search Flow Layout (COMPLETED)
 
-Rencana pembaruan antarmuka ELEXA CAFE agar sepenuhnya responsif, nyaman digunakan di layar smartphone (HP) dan tablet, serta mempertahankan estetika premium di layar desktop/POS terminal monitor.
+Rencana penataan ulang tata letak vertikal untuk Navbar, Banner "Ganti Akun Demo", dan Kartu Pencarian agar tersusun secara runtut dari atas ke bawah menggunakan alur Flexbox normal tanpa ada elemen yang saling menumpuk (overlapping) — telah selesai diimplementasikan dan diverifikasi 100%.
 
 ---
+
+### Status: Selesai Diimplementasikan & Lolos Verifikasi Build
 
 ### User Review & Critical Decisions
 
 > [!IMPORTANT]
-> **Poin Perbaikan Responsivitas (Terkonfirmasi):**
-> 1. **Meta Viewport Anti-Zoom**:
->    - Memperbarui `<meta name="viewport">` di `index.html` menjadi:
->      `width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no` untuk mencegah pergeseran viewport yang tidak disengaja saat mengetuk tombol atau input di perangkat seluler.
-> 2. **Layout Responsif Terminal Kasir (`flex-col lg:flex-row`)**:
->    - **Desktop (`lg` ke atas)**: Tetap mempertahankan tampilan Split Screen 16:9 yang elegan (65% Katalog di sisi kiri, 35% Sticky Cart di sisi kanan).
->    - **Mobile & Tablet (`< lg`)**: Mengubah susunan menjadi satu kolom vertikal penuh (`w-full`). Katalog produk memiliki ruang penuh untuk dijelajahi.
-> 3. **Grid Produk Adaptif**:
->    - Menggunakan kelas responsif: `grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4`.
-> 4. **Floating Cart Bar & Mobile Drawer**:
->    - Di layar mobile (`lg:hidden`), saat keranjang terisi, tombol/bar melayang (**Floating Cart Bar**) akan muncul di bagian bawah layar menampilkan jumlah item dan total belanja.
->    - Mengetuk floating bar akan membuka keranjang pesanan dalam bentuk **Bottom Sheet / Slide Drawer** yang nyaman diakses dengan satu tangan, lengkap dengan tombol "Bayar Sekarang" $\ge 48\text{px}$.
-> 5. **Eliminasi Scrolling Horizontal**:
->    - Menambahkan `overflow-x-hidden`, `w-full`, dan `max-w-full` pada kontainer root (`App.tsx`, `Header.tsx`, dan halaman utama).
->    - Menyesuaikan *Header* di mobile agar tombol navigasi modul dapat digeser secara horizontal (`overflow-x-auto`) atau menggunakan ikon ringkas tanpa memecah layout.
+> **Struktur Tata Letak Vertikal Runtut (Terkonfirmasi):**
+> 1. **Urutan Elemen Alur Dokumen (Top to Bottom)**:
+>    - **Baris 1**: **Navbar Utama** (Logo Elexa Cafe, navigasi modul [Terminal Kasir, Meja & Open Tab, KDS Dapur, Owner Dashboard], status Online/Offline, Toggle Tema, dan Logout).
+>    - **Baris 2**: **Banner Akun Demo (In-Flow Banner)**: Ditempatkan tepat di bawah Navbar sebagai baris horizontal/fleksibel permanen dalam alur dokumen (`flex flex-wrap items-center`), bukan dropdown melayang (`position: absolute`) yang rawan tertimpa atau menutupi konten lain. Menampilkan switcher cepat: *Owner (Akses Penuh)*, *Kasir (Terminal POS)*, *Barista & Dapur (KDS)*, serta tombol *Reset Data Default*.
+>    - **Baris 3**: **Kartu Pencarian & Kategori**: Terletak tepat di bawah Banner Demo dengan margin/gap positif standar. Berisi input pencarian menu/SKU, tombol filter stok, dan pilihan kategori menu.
+>    - **Baris 4**: **Grid Produk**: Mengalir ke bawah dengan scroll vertikal mandiri.
+> 2. **Eliminasi Position Conflict**:
+>    - Menghilangkan dropdown `position: absolute` pada selector demo account di header yang sebelumnya memicu tabrakan visual.
+>    - Memastikan seluruh kontainer menggunakan `position: relative` atau alur statis standar dengan margin positif dan `w-full max-w-full`.
 
 ---
 
-### 1. Overview & User Experience Flow
+### 1. Visual Hierarchy & Spacing Flow
 
 ```
-┌────────────────────────────────────────────────────────┐
-│ MOBILE (HP) VIEWPORT (< 1024px)                        │
-├────────────────────────────────────────────────────────┤
-│ [TOP BAR: Elexa Cafe · Menu Icons · Dark/Light Toggle] │
-├────────────────────────────────────────────────────────┤
-│ [Search Bar & Barcode Input]                           │
-│ [Scrollable Category Chips: All · Coffee · Pastry]     │
-├────────────────────────────────────────────────────────┤
-│ PRODUCT GRID (1 to 2 cols on mobile)                   │
-│ ┌──────────────────────┐  ┌──────────────────────┐     │
-│ │ Iced Spanish Latte   │  │ Almond Croissant     │     │
-│ │ Rp 38.000       [ +] │  │ Rp 32.000       [ +] │     │
-│ └──────────────────────┘  └──────────────────────┘     │
-│ ┌──────────────────────┐  ┌──────────────────────┐     │
-│ │ Matcha Cloud         │  │ Pottery Workshop     │     │
-│ │ Rp 42.000       [ +] │  │ Rp 185.000      [ +] │     │
-│ └──────────────────────┘  └──────────────────────┘     │
-├────────────────────────────────────────────────────────┤
-│ [FLOATING CART BAR: 3 Item · Rp 112.000 · [ Buka ] ]   │
-└────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│ 1. NAVBAR UTAMA (h-16, w-full, border-b)                               │
+│ [Logo ELEXA CAFE] · [Nav Modul: Kasir/Meja/KDS] · [Wifi] · [Theme/Out] │
+├────────────────────────────────────────────────────────────────────────┤
+│ 2. BANNER AKUN DEMO (In-Flow Baris Vertikal)                           │
+│ "Akun Demo: [Owner / Founder]  [Kasir Utama]  [Barista KDS]  [Reset]"  │
+├────────────────────────────────────────────────────────────────────────┤
+│ 3. KARTU PENCARIAN & KATEGORI                                          │
+│ [Input: Cari menu kafe atau scan barcode SKU...] [Hanya Stok Tersedia] │
+│ [Tab Kategori: Semua Menu · Coffee · Tea · Pastry · Workshop · Merch]  │
+├────────────────────────────────────────────────────────────────────────┤
+│ 4. KATALOG GRID PRODUK (Scrollable, 1-4 Kolom Responsif)               │
+│ ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                   │
+│ │ Spanish Latte│  │ Croissant    │  │ Matcha Cloud │                   │
+│ └──────────────┘  └──────────────┘  └──────────────┘                   │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-### 2. File Changes & Implementation Details
+### 2. Implementation Steps
 
-1. **`index.html`**:
-   - Ganti meta viewport ke:
-     `<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />`
-2. **`src/App.tsx`**:
-   - Pastikan root container memiliki `w-full max-w-full overflow-x-hidden min-h-screen`.
-3. **`src/components/common/Header.tsx`**:
-   - Optimasi padding dan navigasi pada breakpoint mobile (`px-3 sm:px-5`).
-   - Sediakan tombol tab yang ramah layar sentuh dan tidak menyebabkan overflow.
-4. **`src/components/pos/PosTerminal.tsx`**:
-   - Ubah pembungkus utama menjadi `flex-col lg:flex-row w-full max-w-full`.
-   - Area katalog: `w-full lg:w-[65%]`.
-   - Grid produk: `grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4`.
-   - Panel keranjang desktop: `hidden lg:flex lg:w-[35%]`.
-   - Floating Cart Button & Modal Drawer untuk mobile (`lg:hidden`).
-5. **`src/components/pos/ProductCard.tsx`**:
-   - Optimasi layout card horizontal atau kompak pada mobile sangat sempit agar gambar dan teks proporsional.
+1. **`src/components/common/Header.tsx`**:
+   - Jadikan Top Bar bersih dan fokus pada identitas brand, status koneksi, navigasi modul, dan aksi global.
+   - Sediakan komponen baris Banner Demo terpisah atau terintegrasi di bagian bawah Navbar dalam alur normal (`w-full border-b border-slate-800 bg-slate-900/90 py-2 px-4`).
+2. **`src/components/pos/PosTerminal.tsx`**:
+   - Hapus segala penggunaan positioning absolut atau margin negatif pada kartu pencarian.
+   - Atur kartu pencarian dan tab kategori sebagai blok flex-col dengan padding dan border yang rapi.
+3. **Verifikasi Tampilan Responsif**:
+   - Pastikan di layar smartphone (HP), banner akun demo dapat di-scroll secara horizontal tanpa memotong teks, dan kartu pencarian berada tepat di bawahnya dengan rapi.
