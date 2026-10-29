@@ -61,24 +61,25 @@ export const Header: React.FC<HeaderProps> = ({ activeView, setActiveView }) => 
   };
 
   return (
-    <header className="h-16 px-5 border-b border-slate-800 bg-slate-900/95 backdrop-blur-md flex items-center justify-between gap-6 shrink-0 z-40 transition-colors dark:bg-slate-900/95 dark:border-slate-800 light:bg-white light:border-slate-200">
+    <header className="h-16 px-3 sm:px-5 border-b border-slate-800 bg-slate-900/95 backdrop-blur-md flex items-center justify-between gap-2 sm:gap-6 shrink-0 z-40 transition-colors dark:bg-slate-900/95 dark:border-slate-800 light:bg-white light:border-slate-200 w-full max-w-full overflow-x-hidden">
       {/* Zone 1: Brand Wordmark */}
-      <div className="flex items-center gap-3 shrink-0">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
-          <Coffee className="w-5 h-5" />
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20 shrink-0">
+          <Coffee className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
         <div>
-          <span className="text-lg font-bold tracking-tight text-white dark:text-white light:text-slate-900 whitespace-nowrap block leading-tight">
+          <span className="text-base sm:text-lg font-bold tracking-tight text-white dark:text-white light:text-slate-900 whitespace-nowrap block leading-tight">
             ELEXA CAFE
           </span>
-          <span className="text-[11px] font-medium text-slate-400 dark:text-slate-400 light:text-slate-500 tracking-wider uppercase block">
+          <span className="hidden sm:block text-[11px] font-medium text-slate-400 dark:text-slate-400 light:text-slate-500 tracking-wider uppercase leading-none mt-0.5">
             Cafe & Workshop
           </span>
         </div>
       </div>
 
-      {/* Zone 2: Navigation Links (Single-line controls) */}
-      <nav className="hidden md:flex items-center gap-1.5 p-1 bg-slate-800/80 dark:bg-slate-800/80 light:bg-slate-100 rounded-xl border border-slate-700/50 dark:border-slate-700/50 light:border-slate-200">
+      {/* Zone 2: Navigation Links */}
+      {/* Desktop Navigation */}
+      <nav className="hidden lg:flex items-center gap-1.5 p-1 bg-slate-800/80 dark:bg-slate-800/80 light:bg-slate-100 rounded-xl border border-slate-700/50 dark:border-slate-700/50 light:border-slate-200">
         <button
           onClick={() => setActiveView('pos')}
           className={`flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
@@ -130,8 +131,61 @@ export const Header: React.FC<HeaderProps> = ({ activeView, setActiveView }) => 
         )}
       </nav>
 
+      {/* Mobile Navigation Icons */}
+      <nav className="flex lg:hidden items-center gap-1 p-0.5 bg-slate-800/80 rounded-lg border border-slate-700/50">
+        <button
+          onClick={() => setActiveView('pos')}
+          title="Terminal Kasir"
+          className={`p-2 rounded-md transition-all ${
+            activeView === 'pos'
+              ? 'bg-emerald-500 text-slate-950 shadow-sm'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <LayoutGrid className="w-4 h-4" />
+        </button>
+
+        <button
+          onClick={() => setActiveView('tables')}
+          title="Meja & Open Tab"
+          className={`p-2 rounded-md transition-all ${
+            activeView === 'tables'
+              ? 'bg-emerald-500 text-slate-950 shadow-sm'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <UtensilsCrossed className="w-4 h-4" />
+        </button>
+
+        <button
+          onClick={() => setActiveView('kds')}
+          title="KDS Dapur"
+          className={`p-2 rounded-md transition-all ${
+            activeView === 'kds'
+              ? 'bg-emerald-500 text-slate-950 shadow-sm'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <ChefHat className="w-4 h-4" />
+        </button>
+
+        {role === 'owner' && (
+          <button
+            onClick={() => setActiveView('dashboard')}
+            title="Owner Dashboard"
+            className={`p-2 rounded-md transition-all ${
+              activeView === 'dashboard'
+                ? 'bg-emerald-500 text-slate-950 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <BarChart3 className="w-4 h-4" />
+          </button>
+        )}
+      </nav>
+
       {/* Zone 3: Actions & System Status */}
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
         {/* Offline Sync Status & Simulation */}
         <div className="flex items-center gap-1.5">
           <button

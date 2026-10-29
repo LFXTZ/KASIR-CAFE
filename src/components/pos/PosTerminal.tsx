@@ -12,6 +12,7 @@ import {
   fetchTablesApi,
   submitCheckoutApi,
 } from '../../services/storageService.ts';
+import { formatRupiah } from '../../utils/formatters.ts';
 import { ProductCard } from './ProductCard.tsx';
 import { StickyCart } from './StickyCart.tsx';
 import { PaymentModal } from './PaymentModal.tsx';
@@ -27,6 +28,9 @@ import {
   Croissant,
   Package,
   CheckCircle2,
+  ShoppingBag,
+  ChevronUp,
+  X,
 } from 'lucide-react';
 
 export const PosTerminal: React.FC = () => {
@@ -36,6 +40,7 @@ export const PosTerminal: React.FC = () => {
     selectedTableId,
     customerName,
     discountAmount,
+    totalAmount,
     addItem,
     setSelectedTable,
     clearCart,
@@ -53,6 +58,7 @@ export const PosTerminal: React.FC = () => {
   const [isPaymentOpen, setIsPaymentOpen] = useState<boolean>(false);
   const [isReceiptOpen, setIsReceiptOpen] = useState<boolean>(false);
   const [isTablePickerOpen, setIsTablePickerOpen] = useState<boolean>(false);
+  const [isMobileCartOpen, setIsMobileCartOpen] = useState<boolean>(false);
   const [lastCompletedOrder, setLastCompletedOrder] = useState<Order | null>(null);
   const [openTabFeedback, setOpenTabFeedback] = useState<string | null>(null);
   const [isSavingOpenTab, setIsSavingOpenTab] = useState<boolean>(false);
@@ -184,22 +190,22 @@ export const PosTerminal: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex overflow-hidden relative">
+    <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative w-full max-w-full">
       {/* Feedback Toast */}
       {openTabFeedback && (
-        <div className="absolute top-4 left-1/3 z-40 bg-amber-500 text-slate-950 px-4 py-2 rounded-xl font-semibold text-xs shadow-xl flex items-center gap-2 animate-bounce">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-500 text-slate-950 px-4 py-2 rounded-xl font-semibold text-xs shadow-xl flex items-center gap-2 animate-bounce">
           <CheckCircle2 className="w-4 h-4" />
           <span>{openTabFeedback}</span>
         </div>
       )}
 
       {/* ------------------------------------------------------------- */}
-      {/* SISI KIRI (65% LEBAR): CATALOG GRID, SEARCH & TABS             */}
+      {/* SISI KIRI (65% di Desktop, 100% di HP): CATALOG GRID & TABS   */}
       {/* ------------------------------------------------------------- */}
-      <div className="w-[65%] flex flex-col h-full bg-slate-900/95 dark:bg-slate-900/95 light:bg-slate-50 border-r border-slate-800 dark:border-slate-800 light:border-slate-200 overflow-hidden">
+      <div className="w-full lg:w-[65%] flex flex-col flex-1 h-full bg-slate-900/95 dark:bg-slate-900/95 light:bg-slate-50 border-r border-slate-800 dark:border-slate-800 light:border-slate-200 overflow-hidden">
         {/* Top Control Bar: Search & Barcode SKU */}
-        <div className="p-4 border-b border-slate-800 dark:border-slate-800 light:border-slate-200 space-y-3 shrink-0">
-          <div className="flex items-center gap-3">
+        <div className="p-3 sm:p-4 border-b border-slate-800 dark:border-slate-800 light:border-slate-200 space-y-2.5 sm:space-y-3 shrink-0">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             {/* Quick Search / Barcode Input */}
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -208,8 +214,8 @@ export const PosTerminal: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleBarcodeSubmit}
-                placeholder="Cari menu kafe atau scan barcode SKU (Tekan Enter)..."
-                className="w-full h-11 pl-10 pr-10 bg-slate-800/80 dark:bg-slate-800/80 light:bg-white border border-slate-700/60 dark:border-slate-700/60 light:border-slate-300 rounded-xl text-xs text-slate-100 dark:text-slate-100 light:text-slate-900 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+                placeholder="Cari menu kafe atau scan barcode SKU..."
+                className="w-full h-10 sm:h-11 pl-10 pr-10 bg-slate-800/80 dark:bg-slate-800/80 light:bg-white border border-slate-700/60 dark:border-slate-700/60 light:border-slate-300 rounded-xl text-xs text-slate-100 dark:text-slate-100 light:text-slate-900 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" title="Scanner barcode aktif">
                 <Barcode className="w-4 h-4" />
@@ -220,7 +226,7 @@ export const PosTerminal: React.FC = () => {
             <button
               type="button"
               onClick={() => setInStockOnly(!inStockOnly)}
-              className={`h-11 px-3.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 whitespace-nowrap ${
+              className={`h-10 sm:h-11 px-3 sm:px-3.5 rounded-xl text-xs font-semibold border transition-all flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 ${
                 inStockOnly
                   ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50'
                   : 'bg-slate-800/60 text-slate-400 border-slate-700/60 hover:text-white'
@@ -230,12 +236,12 @@ export const PosTerminal: React.FC = () => {
             </button>
           </div>
 
-          {/* Category Tabs (Segmented Buttons) */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {/* Category Tabs (Horizontal Scrollable) */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none w-full max-w-full">
             <button
               type="button"
               onClick={() => setActiveCategory('all')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
                 activeCategory === 'all'
                   ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20 font-bold'
                   : 'bg-slate-800/60 dark:bg-slate-800/60 light:bg-white text-slate-400 hover:text-white dark:hover:text-white light:hover:text-slate-900 border border-slate-700/50 dark:border-slate-700/50 light:border-slate-200'
@@ -255,7 +261,7 @@ export const PosTerminal: React.FC = () => {
                   key={cat.id}
                   type="button"
                   onClick={() => setActiveCategory(cat.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                  className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
                     isActive
                       ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20 font-bold'
                       : 'bg-slate-800/60 dark:bg-slate-800/60 light:bg-white text-slate-400 hover:text-white dark:hover:text-white light:hover:text-slate-900 border border-slate-700/50 dark:border-slate-700/50 light:border-slate-200'
@@ -271,11 +277,11 @@ export const PosTerminal: React.FC = () => {
         </div>
 
         {/* Product Grid Area (Scrollable) */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4">
           {isLoading ? (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
               {[1, 2, 3, 4, 5, 6].map((sk) => (
-                <div key={sk} className="h-64 rounded-2xl bg-slate-800/50 animate-pulse border border-slate-700/40" />
+                <div key={sk} className="h-60 sm:h-64 rounded-2xl bg-slate-800/50 animate-pulse border border-slate-700/40" />
               ))}
             </div>
           ) : filteredProducts.length === 0 ? (
@@ -287,19 +293,41 @@ export const PosTerminal: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 pb-20 lg:pb-0">
               {filteredProducts.map((prod) => (
                 <ProductCard key={prod.id} product={prod} onAddToCart={addItem} />
               ))}
             </div>
           )}
         </div>
+
+        {/* Mobile Floating Cart Button / Bar (Muncul jika ada item di HP) */}
+        {items.length > 0 && (
+          <div className="lg:hidden p-3 bg-slate-900/95 border-t border-slate-800 backdrop-blur-md shrink-0 w-full z-20">
+            <button
+              type="button"
+              onClick={() => setIsMobileCartOpen(true)}
+              className="w-full h-12 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm tracking-wide shadow-lg shadow-emerald-500/25 flex items-center justify-between transition-all active:scale-[0.99]"
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-slate-950/20 flex items-center justify-center">
+                  <ShoppingBag className="w-4 h-4" />
+                </div>
+                <span>{items.reduce((s, i) => s + i.quantity, 0)} Item Dipilih</span>
+              </div>
+              <div className="flex items-center gap-2 font-mono-numbers">
+                <span className="text-sm font-extrabold">{formatRupiah(totalAmount)}</span>
+                <ChevronUp className="w-4 h-4" />
+              </div>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* SISI KANAN (35% LEBAR): STICKY CART PANEL                      */}
+      {/* SISI KANAN (35% LEBAR di Desktop): STICKY CART PANEL          */}
       {/* ------------------------------------------------------------- */}
-      <div className="w-[35%] h-full">
+      <div className="hidden lg:flex lg:w-[35%] h-full">
         <StickyCart
           onOpenPayment={() => setIsPaymentOpen(true)}
           onOpenTablePicker={() => setIsTablePickerOpen(true)}
@@ -307,6 +335,46 @@ export const PosTerminal: React.FC = () => {
           isSavingOpenTab={isSavingOpenTab}
         />
       </div>
+
+      {/* ------------------------------------------------------------- */}
+      {/* MOBILE DRAWER / BOTTOM SHEET KERANJANG DI HP                  */}
+      {/* ------------------------------------------------------------- */}
+      {isMobileCartOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex flex-col justify-end">
+          <div className="bg-slate-800 w-full max-h-[88vh] rounded-t-3xl border-t border-slate-700 shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+            {/* Drawer Header */}
+            <div className="px-5 py-3 border-b border-slate-700/60 flex items-center justify-between bg-slate-900/80 shrink-0">
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="w-4 h-4 text-emerald-400" />
+                <span className="font-bold text-sm text-slate-100">Keranjang Pesanan</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMobileCartOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Cart content inside drawer */}
+            <div className="flex-1 overflow-hidden">
+              <StickyCart
+                onOpenPayment={() => {
+                  setIsMobileCartOpen(false);
+                  setIsPaymentOpen(true);
+                }}
+                onOpenTablePicker={() => setIsTablePickerOpen(true)}
+                onSaveOpenTab={() => {
+                  handleSaveOpenTab();
+                  setIsMobileCartOpen(false);
+                }}
+                isSavingOpenTab={isSavingOpenTab}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Payment Multi-Method Modal */}
       <PaymentModal

@@ -47,12 +47,12 @@ function MainApp() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 select-none">
+    <div className="flex flex-col h-screen w-full max-w-full overflow-x-hidden overflow-y-hidden bg-slate-950 text-slate-100 select-none">
       {/* 3-Zone Clean Header */}
       <Header activeView={activeView} setActiveView={setActiveView} />
 
       {/* Main Work Area */}
-      <main className="flex-1 flex overflow-hidden">
+      <main className="flex-1 flex overflow-hidden w-full max-w-full">
         {activeView === 'pos' && <PosTerminal />}
         {activeView === 'tables' && (
           <TableManagementView onStartOrderForTable={handleStartOrderForTable} />

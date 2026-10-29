@@ -1,49 +1,72 @@
-# ELEXA CAFE — Standalone Frontend Data Store & GitHub Pages Compatibility
+# ELEXA CAFE — Mobile-Responsive Layout & Touch Ergonomics
 
-Rencana integrasi data store lokal di sisi frontend untuk memastikan aplikasi POS, KDS, Table Management, dan Owner Dashboard berjalan 100% secara statis di GitHub Pages (`window.location.hostname.includes('github.io')`) tanpa ketergantungan pada server backend, dengan fallback otomatis dan initial seed eksplisit ke LocalStorage.
+Rencana pembaruan antarmuka ELEXA CAFE agar sepenuhnya responsif, nyaman digunakan di layar smartphone (HP) dan tablet, serta mempertahankan estetika premium di layar desktop/POS terminal monitor.
 
 ---
 
 ### User Review & Critical Decisions
 
 > [!IMPORTANT]
-> **Pembaruan Arsitektur Terkonfirmasi:**
-> 1. **Explicit LocalStorage Initial Seed**:
->    - Membuat modul sentral `src/services/storageService.ts` yang memeriksa `localStorage.getItem('products')`, `localStorage.getItem('categories')`, `localStorage.getItem('cafe_tables')`, dan `localStorage.getItem('orders')`.
->    - Jika bernilai `null`, `undefined`, string kosong, atau array kosong `[]`, sistem **seketika mengisinya secara eksplisit** dengan master data lengkap ELEXA CAFE.
-> 2. **GitHub Pages Detection & Zero-Fetch Mode**:
->    - Pengecekan otomatis via helper `isStaticHost()`: mendeteksi `window.location.hostname.includes('github.io')` atau kegagalan fetch API backend.
->    - Jika berjalan di GitHub Pages, seluruh operasi (Get Products, Add to Cart, Checkout, Simpan Meja/Open Tab, Update Status KDS, Tambah/Edit Produk) langsung memutasi LocalStorage secara atomik tanpa memanggil `fetch('/api/*')`.
-> 3. **Asset Image Bundling Kompatibel dengan Sub-Path (`/KASIR-CAFE/`)**:
->    - Mengimpor aset gambar lokal (`hero_iced_latte_*.jpg`, `artisan_croissant_*.jpg`, `matcha_cloud_drink_*.jpg`, `pottery_workshop_pass_*.jpg`) secara langsung di `mockData.ts` sehingga Vite membundel file gambar dan secara otomatis menyematkan prefix base path `/KASIR-CAFE/` tanpa resiko 404 di GitHub Pages.
+> **Poin Perbaikan Responsivitas (Terkonfirmasi):**
+> 1. **Meta Viewport Anti-Zoom**:
+>    - Memperbarui `<meta name="viewport">` di `index.html` menjadi:
+>      `width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no` untuk mencegah pergeseran viewport yang tidak disengaja saat mengetuk tombol atau input di perangkat seluler.
+> 2. **Layout Responsif Terminal Kasir (`flex-col lg:flex-row`)**:
+>    - **Desktop (`lg` ke atas)**: Tetap mempertahankan tampilan Split Screen 16:9 yang elegan (65% Katalog di sisi kiri, 35% Sticky Cart di sisi kanan).
+>    - **Mobile & Tablet (`< lg`)**: Mengubah susunan menjadi satu kolom vertikal penuh (`w-full`). Katalog produk memiliki ruang penuh untuk dijelajahi.
+> 3. **Grid Produk Adaptif**:
+>    - Menggunakan kelas responsif: `grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4`.
+> 4. **Floating Cart Bar & Mobile Drawer**:
+>    - Di layar mobile (`lg:hidden`), saat keranjang terisi, tombol/bar melayang (**Floating Cart Bar**) akan muncul di bagian bawah layar menampilkan jumlah item dan total belanja.
+>    - Mengetuk floating bar akan membuka keranjang pesanan dalam bentuk **Bottom Sheet / Slide Drawer** yang nyaman diakses dengan satu tangan, lengkap dengan tombol "Bayar Sekarang" $\ge 48\text{px}$.
+> 5. **Eliminasi Scrolling Horizontal**:
+>    - Menambahkan `overflow-x-hidden`, `w-full`, dan `max-w-full` pada kontainer root (`App.tsx`, `Header.tsx`, dan halaman utama).
+>    - Menyesuaikan *Header* di mobile agar tombol navigasi modul dapat digeser secara horizontal (`overflow-x-auto`) atau menggunakan ikon ringkas tanpa memecah layout.
 
 ---
 
-### 1. Overview & Core Concept
+### 1. Overview & User Experience Flow
 
-Pengguna dapat menjalankan ELEXA CAFE dalam dua mode terpadu:
-- **Mode Server Full-Stack** (Localhost / Cloud Run): Menggunakan Express REST API (`server.ts`) dengan atomic transaction mutex locking.
-- **Mode Statis / Serverless** (GitHub Pages / Demo Offline): Menggunakan modul `storageService.ts` yang bertindak sebagai database lokal di browser. Data tersimpan persisten di `localStorage`, memungkinkan operasional kasir, meja, dapur KDS, dan analitik dashboard berjalan lancar tanpa server backend.
+```
+┌────────────────────────────────────────────────────────┐
+│ MOBILE (HP) VIEWPORT (< 1024px)                        │
+├────────────────────────────────────────────────────────┤
+│ [TOP BAR: Elexa Cafe · Menu Icons · Dark/Light Toggle] │
+├────────────────────────────────────────────────────────┤
+│ [Search Bar & Barcode Input]                           │
+│ [Scrollable Category Chips: All · Coffee · Pastry]     │
+├────────────────────────────────────────────────────────┤
+│ PRODUCT GRID (1 to 2 cols on mobile)                   │
+│ ┌──────────────────────┐  ┌──────────────────────┐     │
+│ │ Iced Spanish Latte   │  │ Almond Croissant     │     │
+│ │ Rp 38.000       [ +] │  │ Rp 32.000       [ +] │     │
+│ └──────────────────────┘  └──────────────────────┘     │
+│ ┌──────────────────────┐  ┌──────────────────────┐     │
+│ │ Matcha Cloud         │  │ Pottery Workshop     │     │
+│ │ Rp 42.000       [ +] │  │ Rp 185.000      [ +] │     │
+│ └──────────────────────┘  └──────────────────────┘     │
+├────────────────────────────────────────────────────────┤
+│ [FLOATING CART BAR: 3 Item · Rp 112.000 · [ Buka ] ]   │
+└────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ### 2. File Changes & Implementation Details
 
-1. **`src/data/mockData.ts`**:
-   - Master data lengkap dengan import gambar statis agar aman di-build oleh Vite:
-     - Categories: Specialty Coffee, Artisanal Tea & Drinks, Pastry & Bakery, Workshop & Studio, Beans & Merchandise.
-     - Products: 12 menu lengkap (Iced Spanish Latte, Artisan Almond Croissant, Ceremonial Matcha Cloud, Pottery Workshop, Espresso Romano, dll).
-     - Cafe Tables: 9 meja (Indoor AC, Workshop Studio, Outdoor Terrace).
-     - Initial Orders: Tiket KDS untuk demonstrasi alur barista.
-     - Default Users: Owner, Kasir, Kitchen.
-2. **`src/services/storageService.ts`**:
-   - `isStaticHost()`: Cek apakah `window.location.hostname.includes('github.io')`.
-   - `initializeStorage()`: Cek apakah data kosong; jika ya, tuliskan default mock data ke LocalStorage.
-   - `getProducts()`, `saveProducts()`, `getCategories()`, `getTables()`, `saveTables()`, `getOrders()`, `saveOrders()`, `getAnalytics()`.
-   - `processLocalCheckout()`: Eksekusi checkout atomik di browser (cek `stock >= qty`, kurangi stok produk di LocalStorage, simpan order baru, update status meja).
-   - `updateLocalOrderStatus()`: Update tiket KDS di LocalStorage.
-3. **Pembaruan Komponen**:
-   - `src/components/pos/PosTerminal.tsx`: Pada `useEffect`, muat produk dan kategori melalui `storageService`. Jika di GitHub Pages, langsung ambil dari LocalStorage; jika ada server, coba fetch dan fallback ke LocalStorage jika gagal.
-   - `src/components/kds/KitchenDisplaySystem.tsx`: Mendukung pembacaan dan update status tiket dari LocalStorage di GitHub Pages.
-   - `src/components/tables/TableManagementView.tsx`: Mendukung pelunasan tab dan pembaruan meja di LocalStorage.
-   - `src/components/dashboard/OwnerDashboard.tsx`: Mendukung CRUD produk, restock, dan grafik laba dari LocalStorage.
+1. **`index.html`**:
+   - Ganti meta viewport ke:
+     `<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />`
+2. **`src/App.tsx`**:
+   - Pastikan root container memiliki `w-full max-w-full overflow-x-hidden min-h-screen`.
+3. **`src/components/common/Header.tsx`**:
+   - Optimasi padding dan navigasi pada breakpoint mobile (`px-3 sm:px-5`).
+   - Sediakan tombol tab yang ramah layar sentuh dan tidak menyebabkan overflow.
+4. **`src/components/pos/PosTerminal.tsx`**:
+   - Ubah pembungkus utama menjadi `flex-col lg:flex-row w-full max-w-full`.
+   - Area katalog: `w-full lg:w-[65%]`.
+   - Grid produk: `grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4`.
+   - Panel keranjang desktop: `hidden lg:flex lg:w-[35%]`.
+   - Floating Cart Button & Modal Drawer untuk mobile (`lg:hidden`).
+5. **`src/components/pos/ProductCard.tsx`**:
+   - Optimasi layout card horizontal atau kompak pada mobile sangat sempit agar gambar dan teks proporsional.
