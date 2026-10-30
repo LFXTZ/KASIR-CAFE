@@ -211,11 +211,11 @@ export const OwnerDashboard: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-slate-900/95 text-slate-100 overflow-hidden">
+    <div className="flex-1 flex flex-col h-full w-full max-w-full overflow-x-hidden bg-slate-900/95 text-slate-100">
       {/* Top Header */}
-      <div className="px-6 py-4 border-b border-slate-800 bg-slate-900/90 flex flex-wrap items-center justify-between gap-4 shrink-0">
+      <div className="px-4 sm:px-6 py-4 border-b border-slate-800 bg-slate-900/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0 max-w-full">
         <div>
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
+          <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
             Owner & Founder Dashboard
             <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">
               Akses Penuh / Admin
@@ -227,11 +227,11 @@ export const OwnerDashboard: React.FC = () => {
         </div>
 
         {/* Tab Controls */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center p-1 bg-slate-800 rounded-xl border border-slate-700/60">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center p-1 bg-slate-800 rounded-xl border border-slate-700/60 overflow-x-auto no-scrollbar whitespace-nowrap max-w-full flex-1 sm:flex-initial">
             <button
               onClick={() => setActiveTab('analytics')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-all ${
                 activeTab === 'analytics'
                   ? 'bg-emerald-500 text-slate-950 font-bold'
                   : 'text-slate-400 hover:text-white'
@@ -242,7 +242,7 @@ export const OwnerDashboard: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveTab('inventory')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-all ${
                 activeTab === 'inventory'
                   ? 'bg-emerald-500 text-slate-950 font-bold'
                   : 'text-slate-400 hover:text-white'
@@ -253,7 +253,7 @@ export const OwnerDashboard: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveTab('history')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-all ${
                 activeTab === 'history'
                   ? 'bg-emerald-500 text-slate-950 font-bold'
                   : 'text-slate-400 hover:text-white'
@@ -264,7 +264,7 @@ export const OwnerDashboard: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveTab('staff')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-all ${
                 activeTab === 'staff'
                   ? 'bg-emerald-500 text-slate-950 font-bold'
                   : 'text-slate-400 hover:text-white'
@@ -277,7 +277,8 @@ export const OwnerDashboard: React.FC = () => {
 
           <button
             onClick={fetchDashboardData}
-            className="p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
+            title="Muat Ulang Data"
+            className="p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors shrink-0"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
@@ -285,7 +286,7 @@ export const OwnerDashboard: React.FC = () => {
       </div>
 
       {/* Main Tab Content */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-3.5 sm:p-6 space-y-6 max-w-full">
         {/* TAB 1: ANALYTICS & PROFIT */}
         {activeTab === 'analytics' && analytics && (
           <div className="space-y-6">
@@ -359,30 +360,56 @@ export const OwnerDashboard: React.FC = () => {
             {/* Sales Chart & Top Selling */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Hourly Sales Bar Representation */}
-              <div className="lg:col-span-2 p-5 rounded-2xl bg-slate-800/80 border border-slate-700/60 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-sm text-slate-100">Tren Penjualan Per Jam (Hari Ini)</h4>
-                  <span className="text-xs text-slate-400">Data Real-Time</span>
+              <div className="lg:col-span-2 p-4 sm:p-5 rounded-2xl bg-slate-800/80 border border-slate-700/60 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h4 className="font-bold text-sm text-slate-100">Tren Penjualan Per Jam (Hari Ini)</h4>
+                    <span className="text-xs text-slate-400">
+                      Total {formatRupiah(analytics.hourly_sales.reduce((sum, s) => sum + s.sales, 0))} · {analytics.hourly_sales.reduce((sum, s) => sum + s.count, 0)} porsi terjual
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    {analytics.today_orders_count} Transaksi Hari Ini
+                  </span>
                 </div>
 
-                <div className="h-56 flex items-end justify-between gap-3 pt-6 pb-2 px-2 border-b border-slate-700/50">
-                  {analytics.hourly_sales.map((slot) => {
-                    const maxVal = Math.max(...analytics.hourly_sales.map((s) => s.sales), 100000);
-                    const heightPercent = Math.max(8, Math.round((slot.sales / maxVal) * 100));
+                <div className="pt-4 pb-2">
+                  <div className="h-60 sm:h-64 flex items-end justify-between gap-2 sm:gap-3.5 pb-2 px-1 sm:px-3 border-b border-slate-700/60">
+                    {analytics.hourly_sales.map((slot) => {
+                      const maxVal = Math.max(...analytics.hourly_sales.map((s) => s.sales), 100000);
+                      const heightPercent = Math.max(12, Math.round((slot.sales / maxVal) * 100));
 
-                    return (
-                      <div key={slot.hour} className="flex-1 flex flex-col items-center gap-2 group">
-                        <span className="text-[10px] font-mono opacity-0 group-hover:opacity-100 transition-opacity text-emerald-400 whitespace-nowrap">
-                          {formatRupiah(slot.sales)}
-                        </span>
-                        <div
-                          style={{ height: `${heightPercent}%` }}
-                          className="w-full max-w-[42px] bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-t-lg transition-all group-hover:from-emerald-500 group-hover:to-emerald-300"
-                        />
-                        <span className="text-[11px] font-mono text-slate-400">{slot.hour}</span>
-                      </div>
-                    );
-                  })}
+                      return (
+                        <div key={slot.hour} className="flex-1 flex flex-col items-center gap-1.5 sm:gap-2 group h-full justify-end">
+                          {/* Value tooltip & portion label */}
+                          <div className="flex flex-col items-center opacity-70 group-hover:opacity-100 transition-opacity mb-1 text-center pointer-events-none">
+                            <span className="text-[9px] sm:text-[10px] font-mono-numbers font-bold text-emerald-400 whitespace-nowrap bg-slate-900/80 px-1 py-0.5 rounded border border-emerald-500/20">
+                              {formatRupiah(slot.sales)}
+                            </span>
+                            <span className="text-[8px] sm:text-[9px] text-slate-400 whitespace-nowrap">
+                              {slot.count} porsi
+                            </span>
+                          </div>
+
+                          {/* Gradient Vertical Bar */}
+                          <div
+                            style={{ height: `${heightPercent}%` }}
+                            className="w-full max-w-[40px] bg-gradient-to-t from-emerald-600 via-emerald-500 to-emerald-400 rounded-t-lg sm:rounded-t-xl transition-all duration-300 group-hover:from-emerald-500 group-hover:to-emerald-300 shadow-md shadow-emerald-500/10 group-hover:shadow-emerald-500/30"
+                          />
+
+                          {/* Hour Label */}
+                          <span className="text-[10px] sm:text-[11px] font-mono text-slate-400 group-hover:text-emerald-400 font-medium transition-colors">
+                            {slot.hour}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-500 pt-2 px-1">
+                    <span>Mulai 08:00 WIB</span>
+                    <span className="text-emerald-500/80 font-medium">Jam Operasional Kafe</span>
+                    <span>Tutup 21:00 WIB</span>
+                  </div>
                 </div>
               </div>
 
@@ -433,21 +460,21 @@ export const OwnerDashboard: React.FC = () => {
             </div>
 
             {/* Inventory Table */}
-            <div className="rounded-2xl border border-slate-700/60 bg-slate-800/80 overflow-hidden shadow-lg">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900/80 text-slate-400 border-b border-slate-700/60 uppercase tracking-wider text-[11px]">
+            <div className="w-full overflow-x-auto rounded-2xl border border-slate-700/60 bg-slate-800/80 shadow-lg">
+              <table className="w-full min-w-[640px] text-left text-xs">
+                <thead className="bg-slate-900/80 text-slate-400 border-b border-slate-700/60 uppercase tracking-wider text-[10px] sm:text-[11px]">
                   <tr>
-                    <th className="py-3 px-4">Produk</th>
-                    <th className="py-3 px-4">SKU</th>
-                    <th className="py-3 px-4">Kategori</th>
-                    <th className="py-3 px-4 text-right">Harga Jual</th>
-                    <th className="py-3 px-4 text-right">HPP (Modal)</th>
-                    <th className="py-3 px-4 text-right">Margin</th>
-                    <th className="py-3 px-4 text-center">Stok</th>
-                    <th className="py-3 px-4 text-center">Aksi</th>
+                    <th className="py-2.5 sm:py-3 px-2.5 sm:px-4">Produk</th>
+                    <th className="py-2.5 sm:py-3 px-2 sm:px-4">SKU</th>
+                    <th className="py-2.5 sm:py-3 px-2 sm:px-4">Kategori</th>
+                    <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-right">Harga Jual</th>
+                    <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-right">HPP (Modal)</th>
+                    <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-right">Margin</th>
+                    <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-center">Stok</th>
+                    <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-center">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-700/40">
+                <tbody className="divide-y divide-slate-700/40 text-[11px] sm:text-xs">
                   {products.map((prod) => {
                     const cat = categories.find((c) => c.id === prod.category_id);
                     const margin = prod.price - prod.cost_price;
@@ -456,31 +483,31 @@ export const OwnerDashboard: React.FC = () => {
 
                     return (
                       <tr key={prod.id} className="hover:bg-slate-700/30 transition-colors">
-                        <td className="py-3 px-4 font-semibold text-slate-100 flex items-center gap-3">
+                        <td className="py-2.5 sm:py-3 px-2.5 sm:px-4 font-semibold text-slate-100 flex items-center gap-2.5">
                           <img
                             src={prod.image_url}
                             alt=""
-                            className="w-9 h-9 rounded-lg object-cover bg-slate-900 shrink-0"
+                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg object-cover bg-slate-900 shrink-0"
                             onError={(e) => {
                               (e.target as HTMLElement).style.display = 'none';
                             }}
                           />
-                          <span className="truncate max-w-[200px]">{prod.name}</span>
+                          <span className="truncate max-w-[140px] sm:max-w-[200px]">{prod.name}</span>
                         </td>
-                        <td className="py-3 px-4 font-mono text-slate-400">{prod.sku}</td>
-                        <td className="py-3 px-4 text-slate-300">{cat?.name || '-'}</td>
-                        <td className="py-3 px-4 font-mono-numbers text-right font-bold text-slate-100">
+                        <td className="py-2.5 sm:py-3 px-2 sm:px-4 font-mono text-slate-400 text-[10px] sm:text-xs">{prod.sku}</td>
+                        <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-slate-300">{cat?.name || '-'}</td>
+                        <td className="py-2.5 sm:py-3 px-2 sm:px-4 font-mono-numbers text-right font-bold text-slate-100 whitespace-nowrap">
                           {formatRupiah(prod.price)}
                         </td>
-                        <td className="py-3 px-4 font-mono-numbers text-right text-slate-400">
+                        <td className="py-2.5 sm:py-3 px-2 sm:px-4 font-mono-numbers text-right text-slate-400 whitespace-nowrap">
                           {formatRupiah(prod.cost_price)}
                         </td>
-                        <td className="py-3 px-4 font-mono-numbers text-right text-emerald-400">
+                        <td className="py-2.5 sm:py-3 px-2 sm:px-4 font-mono-numbers text-right text-emerald-400 font-semibold whitespace-nowrap">
                           +{marginPercent}%
                         </td>
-                        <td className="py-3 px-4 text-center font-mono-numbers">
+                        <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-center font-mono-numbers whitespace-nowrap">
                           <span
-                            className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                            className={`px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold ${
                               prod.stock === 0
                                 ? 'bg-rose-500/20 text-rose-300'
                                 : isLow
@@ -491,12 +518,13 @@ export const OwnerDashboard: React.FC = () => {
                             {prod.stock} unit
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-center">
-                          <div className="flex items-center justify-center gap-1.5">
+                        <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-center whitespace-nowrap">
+                          <div className="flex items-center justify-center gap-1 sm:gap-1.5">
                             <button
                               type="button"
                               onClick={() => handleOpenEditProduct(prod)}
                               className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                              title="Edit Produk"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
@@ -504,6 +532,7 @@ export const OwnerDashboard: React.FC = () => {
                               type="button"
                               onClick={() => handleDeleteProduct(prod.id)}
                               className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors"
+                              title="Hapus Produk"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -526,36 +555,36 @@ export const OwnerDashboard: React.FC = () => {
               <span className="text-xs text-slate-400">Audit seluruh pesanan masuk, status bayar, dan kasir</span>
             </div>
 
-            <div className="rounded-2xl border border-slate-700/60 bg-slate-800/80 overflow-hidden shadow-lg">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900/80 text-slate-400 border-b border-slate-700/60 uppercase tracking-wider text-[11px]">
+            <div className="w-full overflow-x-auto rounded-2xl border border-slate-700/60 bg-slate-800/80 shadow-lg">
+              <table className="w-full min-w-[680px] text-left text-xs">
+                <thead className="bg-slate-900/80 text-slate-400 border-b border-slate-700/60 uppercase tracking-wider text-[10px] sm:text-[11px]">
                   <tr>
-                    <th className="py-3 px-4">No. Order</th>
-                    <th className="py-3 px-4">Waktu</th>
-                    <th className="py-3 px-4">Pelanggan & Meja</th>
-                    <th className="py-3 px-4">Kasir</th>
-                    <th className="py-3 px-4">Metode Bayar</th>
-                    <th className="py-3 px-4 text-right">Total Transaksi</th>
-                    <th className="py-3 px-4 text-center">Status</th>
-                    <th className="py-3 px-4 text-center">Rincian</th>
+                    <th className="py-2.5 sm:py-3 px-2.5 sm:px-4">No. Order</th>
+                    <th className="py-2.5 sm:py-3 px-2 sm:px-4">Waktu</th>
+                    <th className="py-2.5 sm:py-3 px-2 sm:px-4">Pelanggan & Meja</th>
+                    <th className="py-2.5 sm:py-3 px-2 sm:px-4">Kasir</th>
+                    <th className="py-2.5 sm:py-3 px-2 sm:px-4">Metode Bayar</th>
+                    <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-right">Total Transaksi</th>
+                    <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-center">Status</th>
+                    <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-center">Rincian</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-700/40">
+                <tbody className="divide-y divide-slate-700/40 text-[11px] sm:text-xs">
                   {orders.map((ord) => (
                     <tr key={ord.id} className="hover:bg-slate-700/30 transition-colors">
-                      <td className="py-3 px-4 font-mono font-bold text-emerald-400">{ord.order_number}</td>
-                      <td className="py-3 px-4 text-slate-400">{formatDateTime(ord.created_at)}</td>
-                      <td className="py-3 px-4 text-slate-200">
+                      <td className="py-2.5 sm:py-3 px-2.5 sm:px-4 font-mono font-bold text-emerald-400 whitespace-nowrap">{ord.order_number}</td>
+                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-slate-400 whitespace-nowrap">{formatDateTime(ord.created_at)}</td>
+                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-slate-200">
                         {ord.customer_name} ({ord.table_number || ord.order_type})
                       </td>
-                      <td className="py-3 px-4 text-slate-400">{ord.cashier_name || 'Kasir'}</td>
-                      <td className="py-3 px-4 uppercase font-semibold text-slate-300">
+                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-slate-400 whitespace-nowrap">{ord.cashier_name || 'Kasir'}</td>
+                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 uppercase font-semibold text-slate-300 whitespace-nowrap">
                         {ord.payment_method}
                       </td>
-                      <td className="py-3 px-4 font-mono-numbers text-right font-bold text-slate-100">
+                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 font-mono-numbers text-right font-bold text-slate-100 whitespace-nowrap">
                         {formatRupiah(ord.total_amount)}
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-center whitespace-nowrap">
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
                             ord.order_status === 'completed'
@@ -568,7 +597,7 @@ export const OwnerDashboard: React.FC = () => {
                           {ord.order_status}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-center whitespace-nowrap">
                         <button
                           type="button"
                           onClick={() => setSelectedOrder(ord)}
@@ -579,6 +608,13 @@ export const OwnerDashboard: React.FC = () => {
                       </td>
                     </tr>
                   ))}
+                  {orders.length === 0 && (
+                    <tr>
+                      <td colSpan={8} className="py-6 text-center text-slate-500">
+                        Belum ada riwayat transaksi yang tercatat
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

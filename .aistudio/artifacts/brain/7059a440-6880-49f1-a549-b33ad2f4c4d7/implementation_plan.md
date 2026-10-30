@@ -1,92 +1,95 @@
-# ELEXA CAFE — Mobile Sticky Checkout Bar & Safe-Area Ergonomics (COMPLETED)
+# Owner & Founder Dashboard: Perbaikan Grafik Analitik & Responsivitas Mobile
 
-Rencana arsitektur dan penataan ulang *checkout bar* / tombol pembayaran di layar smartphone (HP) agar selalu terlihat, mudah dipencet dengan satu jempol, tidak terpotong oleh bilah navigasi browser/gesture bar iOS & Android, serta tidak menutupi produk paling bawah di katalog — telah selesai diimplementasikan dan diverifikasi 100%.
+Perbaikan komprehensif pada halaman Owner & Founder Dashboard Elexa Cafe agar grafik tren penjualan per jam terisi data visual yang akurat serta tata letak seluruh komponen (kartu KPI, navigasi sub-menu, dan tabel transaksi/inventaris) tampil responsif dan nyaman digunakan di layar HP.
 
----
-
-### Status: Selesai Diimplementasikan & Lolos Verifikasi Build
-
-### User Review & Critical Decisions
+## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> **Keputusan Desain & UX Mobile (Terkonfirmasi dari Fase 1):**
-> 1. **Aksi Utama Tombol Pembayaran**: Menekan tombol utama langsung membuka **Modal Pembayaran (Payment Multi-Method)** agar kasir dapat segera memproses transaksi QRIS/Tunai/Debit, sekaligus menyediakan tombol sekunder/opsi untuk membuka Drawer Keranjang guna mengecek catatan atau mengubah jumlah pesanan.
-> 2. **Informasi Ringkas Bar Bawah**: Menampilkan ringkasan pesanan yang presisi berupa **total item dipilih**, **nominal total tagihan (Rp)**, dan tombol aksi tegas **"BAYAR SEKARANG"**.
-> 3. **Posisi & Ergonomi Layar Sentuh**: Menggunakan `fixed bottom-0 left-0 right-0 z-50` dengan dukungan `env(safe-area-inset-bottom)` dan `100dvh`, serta menambahkan `pb-28` pada kontainer katalog produk agar kartu menu paling bawah tetap dapat di-scroll sepenuhnya ke atas tanpa tertutup bar pembayaran.
+> Keputusan desain berikut telah dikonfirmasi pada tahap klarifikasi:
+> - **Format Tampilan Tabel di Mobile**: Menggunakan pembungkus tabel scroll horizontal (`w-full overflow-x-auto`) dengan ukuran padding sel yang kompak (`px-2.5 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs`) agar data inventaris dan riwayat transaksi tetap lengkap, tabular, dan mudah dipindai di HP.
+> - **Visual Grafik Tren Penjualan**: Menggunakan visualisasi batang vertikal modern dengan aksen gradien *emerald green*, efek *hover tooltip*, label nominal Rupiah, dan indikator jumlah porsi per jam.
 
 ---
 
-### 1. Overview & Core Concept
+## 1. Overview & Core Concept
 
-- **Apa yang Dibangun**: Modul navigasi bawah (*Fixed Mobile Checkout Bar*) yang mengambang di bagian terbawah layar ponsel kasir saat ada minimal 1 item di keranjang belanja.
-- **Pengguna Sasaran**: Kasir kafe dan barista yang mengoperasikan terminal POS menggunakan smartphone (Android / iOS) saat mobile ordering atau antrean padat di meja.
-- **Nilai Utama**: Menghilangkan kendala tombol terpotong oleh gesture bar bawaan HP atau bilah navigasi Safari/Chrome mobile, mempercepat waktu checkout dengan *one-thumb reach*, dan mencegah tertutupnya katalog produk paling bawah.
+- **Apa yang Dikerjakan**:
+  1. **Grafik Analitik Terisi**: Mengisi data tren penjualan per jam (08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00) dengan fallback mock data transaksi hari ini bernilai total Rp 688.000 dari transaksi realistis, sehingga batang grafik tidak kosong.
+  2. **Responsivitas Layar HP**:
+     - Grid KPI statistik berubah dari 4 kolom menjadi 1 kolom di HP, 2 kolom di tablet, dan 4 kolom di layar lebar (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`).
+     - Sub-menu navigasi (*Analitik & Laba*, *Inventaris & Produk*, *Riwayat Transaksi*, *Staff & Kasir*) dilengkapi `overflow-x-auto no-scrollbar whitespace-nowrap` agar dapat digeser mulus tanpa terpotong di layar HP.
+     - Tabel inventaris produk dan riwayat transaksi dibungkus dalam container `w-full overflow-x-auto` dengan padding sel mobile yang proporsional.
+     - Kontainer utama dashboard diamankan dengan `max-w-full overflow-x-hidden` untuk mencegah scrolling horizontal liar pada browser.
 
----
-
-### 2. User Experience & Visual Design
-
-#### A. Key User Flows
-1. **Memilih Menu**: Kasir menekan produk pada katalog. Begitu keranjang terisi $\ge 1$ item, bar pembayaran muncul mulus dari bawah (*slide-up*) dengan status item dan total rupiah otomatis diperbarui secara reaktif.
-2. **Scroll Katalog Bebas Hambatan**: Saat kasir scroll hingga item terakhir di kategori terbawah, kontainer produk memiliki bantalan ruang ekstra (`pb-28`), sehingga kartu menu terbawah terlihat utuh dan tombol `+` / detail tetap dapat diklik leluasa.
-3. **Eksekusi Pembayaran Cepat**: Kasir menekan tombol hijau emerald `"BAYAR SEKARANG"`. Sistem langsung memunculkan **PaymentModal** (QRIS instan, Cash dengan kalkulator kembalian, Kartu Debit).
-4. **Inspeksi & Catatan Item**: Jika pelanggan meminta penyesuaian ("less sugar", "extra shot"), kasir dapat menekan ikon/bagian ringkasan item di sisi kiri bar untuk membuka **Bottom Sheet / Drawer Keranjang** penuh.
-
-#### B. Visual Identity & Mobile Ergonomics
-- **Latar Belakang Bar**: `bg-slate-900/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-800` memberikan batas visual yang tegas dan kontras tinggi terhadap katalog di baliknya.
-- **Pewarnaan Aksen (60-30-10 Rule)**:
-  - Tombol Utama: Emerald Green (`#10B981`) teks gelap berbobot tebal (`text-slate-950 font-bold`) dengan touch target min $48\text{px}$.
-  - Ringkasan Tagihan: Angka nominal dengan format monospace (`tabular-nums font-mono-numbers`) berwarna putih/emerald berbobot ekstra tebal.
-- **Safe Area Inset Padding**: Menggunakan formula `pb-[calc(0.75rem+env(safe-area-inset-bottom))]` untuk memastikan tombol tidak pernah berhimpitan dengan home bar iPhone atau tombol navigasi 3-tombol Android.
+- **Target Persona**: Owner, Founder, dan Cafe Manager yang memantau performa penjualan, laba kotor, dan ketersediaan stok produk baik dari laptop maupun langsung melalui smartphone.
 
 ---
 
-### 3. Key Product Decisions & Trade-Offs
+## 2. User Experience & Visual Design
 
-- **Keputusan 1: Fixed Global Bar vs. In-Flow Panel di Mobile**
-  - *Pendekatan*: Mengubah bar mobile dari elemen yang mengalir di akhir flexbox menjadi `fixed bottom-0 left-0 right-0 z-50`.
-  - *Alasan*: Pada layar ponsel dengan variasi tinggi dinamis (`dvh`) dan keyboard virtual, elemen flexbox sering kali terdorong ke luar viewport (*overflow-y hidden parent*). Penempatan fixed menjamin tombol pembayaran 100% selalu terlihat di zona jempol bawah (*Natural Reach Zone*).
-  - *Alternatif yang Ditolak*: Sticky di dalam scroll wrapper sering mengalami glitch pada Safari iOS saat status bar menyusut.
-
-- **Keputusan 2: Pemisahan Aksi Cepat Bayar vs. Drawer Rincian**
-  - *Pendekatan*: Bar bawah mobile membagi dua affordance: area kiri (ikon keranjang + jumlah item + chevron) untuk membuka drawer rincian, dan tombol kanan (Emerald CTA "Bayar Sekarang") untuk langsung membuka modal pembayaran.
-  - *Alasan*: Mengurangi 1 langkah (klik buka drawer -> klik bayar di drawer) saat kasir hanya ingin langsung memproses pembayaran pesanan sederhana.
+### Alur Tampilan di Layar Mobile:
+1. **Header Dashboard**:
+   - Judul "Owner & Founder Dashboard" dan subteks ringkas tertata rapi di bagian atas.
+   - Baris tab navigasi dapat di-swipe secara horizontal dengan touch gesture alami tanpa merusak layout.
+2. **Kartu KPI Finansial**:
+   - Tersusun vertikal 1 kolom di layar HP dengan margin yang konsisten:
+     * *Omzet Hari Ini*: Rp 688.000
+     * *Laba Kotor (Gross Profit)*: Ditampilkan jelas beserta modal HPP
+     * *Rata-Rata Keranjang (AOV)*: Basket size pelanggan
+     * *Peringatan Stok Menipis*: Badge peringatan untuk stok kritis &le; 5 unit
+3. **Grafik Tren Penjualan Per Jam**:
+   - Bar chart vertikal adaptif dengan tinggi proporsional dan warna gradien emerald.
+   - Slot jam: `08:00`, `10:00`, `12:00`, `14:00`, `16:00`, `18:00`, `20:00`.
+   - Tooltip interaktif menampilkan total omzet dan porsi terjual pada jam terkait.
+4. **Tabel Inventaris & Riwayat Transaksi**:
+   - Tabel dapat digeser ke samping dengan halus tanpa membuat seluruh halaman web melebar.
+   - Tombol aksi (Edit, Hapus, Lihat Struk) memiliki ukuran tap minimal 36px untuk kenyamanan sentuhan jari di HP.
 
 ---
 
-### 4. Technical Architecture & Component Layout
+## 3. Key Product Decisions & Trade-Offs
+
+- **Keputusan 1: Fallback Analytics Engine**:
+  - *Pendekatan*: Menghitung analitik secara dinamis dari order hari ini di LocalStorage/Express API. Jika order hari ini masih kosong atau di bawah nilai target demo, gunakan dataset default terkalibrasi (total Rp 688.000, laba kotor proporsional, serta distribusi per jam 08:00 - 20:00).
+  - *Alasan*: Menjamin tampilan awal dashboard langsung memukau dan informatif bagi owner kafe saat pertama kali dibuka atau dijalankan statis di GitHub Pages.
+- **Keputusan 2: Scroll Horizontal Khusus Tabel vs. Kartu Terpisah**:
+  - *Pendekatan*: Mempertahankan struktur tabel data dengan pembungkus `overflow-x-auto` dan padding kompak, didukung label kolom sticky/jelas.
+  - *Alasan*: Pengguna memilih tampilan tabel kompak agar dapat membandingkan harga jual, HPP, margin laba, dan stok secara langsung dalam satu pandangan.
+
+---
+
+## 4. Technical Architecture & Data Strategy
 
 ```
 ┌────────────────────────────────────────────────────────┐
-│  ELEXA CAFE — Top Navbar & In-Flow Demo Banner         │
-├────────────────────────────────────────────────────────┤
-│  Search Card & Category Filter Bar                     │
-├────────────────────────────────────────────────────────┤
-│  SCROLLABLE PRODUCT CATALOG CONTAINER                  │
-│  (Menggunakan pb-28 / pb-32 agar produk bawah utuh)    │
-│  ┌───────────────────────┐  ┌───────────────────────┐  │
-│  │ Spanish Latte         │  │ Artisan Croissant     │  │
-│  │ Rp 38.000             │  │ Rp 32.000             │  │
-│  └───────────────────────┘  └───────────────────────┘  │
-│  ┌───────────────────────┐  ┌───────────────────────┐  │
-│  │ Matcha Cloud          │  │ Pottery Workshop Pass │  │
-│  │ Rp 42.000             │  │ Rp 150.000            │  │
-│  └───────────────────────┘  └───────────────────────┘  │
-├────────────────────────────────────────────────────────┤
-│  [FIXED MOBILE CHECKOUT BAR] (z-50, bottom-0, fixed)   │
-│  ┌────────────────────────┬──────────────────────────┐ │
-│  │ 🛍️ 3 Item · Rp 112.000 │ [ BAYAR SEKARANG ]       │ │
-│  │ (Klik: Buka Drawer)    │ (Klik: Modal Pembayaran) │ │
-│  └────────────────────────┴──────────────────────────┘ │
-│  SafeArea Padding: env(safe-area-inset-bottom)         │
-└────────────────────────────────────────────────────────┘
+│                   OwnerDashboard                       │
+│  (max-w-full overflow-x-hidden flex flex-col h-full)   │
+└──────────────────────────┬─────────────────────────────┘
+                           │
+      ┌────────────────────┴────────────────────┐
+      ▼                                         ▼
+┌───────────────────────────────┐ ┌───────────────────────────────┐
+│     Sticky/In-Flow Header     │ │   Horizontal Scroll Tabs      │
+│  - Title & Akses Penuh Badge  │ │   flex overflow-x-auto        │
+│  - Refresh Button             │ │   no-scrollbar whitespace-nowrap│
+└───────────────────────────────┘ └─────────────┬─────────────────┘
+                                                │
+         ┌───────────────────┬──────────────────┴───────────────┬───────────────────┐
+         ▼                   ▼                                  ▼                   ▼
+┌──────────────────┐ ┌──────────────────┐             ┌──────────────────┐ ┌──────────────────┐
+│  Tab Analytics   │ │  Tab Inventaris  │             │   Tab Riwayat    │ │    Tab Staff     │
+│ 1-col mobile KPI │ │ Table with       │             │ Table with       │ │ User Cards Grid  │
+│ Hourly Bar Chart │ │ overflow-x-auto  │             │ overflow-x-auto  │ │ Role RBAC        │
+│ (8h-20h slots)   │ │ compact padding  │             │ compact padding  │ │ Add Staff Modal  │
+└──────────────────┘ └──────────────────┘             └──────────────────┘ └──────────────────┘
 ```
 
-#### Komponen yang Diperbarui:
-1. **`src/components/pos/PosTerminal.tsx`**:
-   - Memindahkan Mobile Checkout Bar ke luar pembungkus kolom lokal dan menetapkan `fixed bottom-0 left-0 right-0 z-50 lg:hidden`.
-   - Menambahkan pembungkus aksi: klik ringkasan kiri untuk `setIsMobileCartOpen(true)` dan tombol kanan untuk langsung membuka `setIsPaymentOpen(true)`.
-   - Mengatur padding bawah pada grid produk: `pb-28 sm:pb-32` di mobile sehingga item terbawah tidak tertutup bar melayang.
-   - Mengonfigurasi safe area inset: `pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]`.
-2. **`src/components/pos/StickyCart.tsx`**:
-   - Memastikan tombol "BAYAR SEKARANG" di dalam bottom sheet drawer juga menerapkan safe area inset padding saat drawer dibuka di HP.
+### Rincian Perubahan File:
+1. `src/services/storageService.ts`:
+   - Kalibrasi fungsi `computeLocalAnalytics()` agar mengembalikan fallback `hourly_sales` (08:00: Rp 76.000, 10:00: Rp 120.000, 12:00: Rp 210.000, 14:00: Rp 95.000, 16:00: Rp 64.000, 18:00: Rp 85.000, 20:00: Rp 38.000 = total Rp 688.000) jika transaksi hari ini belum ada, atau mengakumulasikan transaksi riil.
+2. `src/components/dashboard/OwnerDashboard.tsx`:
+   - Kontainer root: tambahkan `max-w-full overflow-x-hidden`.
+   - Sub-menu tabs container: tambahkan kelas `flex items-center overflow-x-auto no-scrollbar whitespace-nowrap`.
+   - KPI Cards: pastikan kelas responsif `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`.
+   - Grafik Penjualan Per Jam: optimalkan rendering batang vertikal modern dengan tinggi dinamis, label Rupiah dan jumlah transaksi/porsi, serta status responsif di layar kecil.
+   - Tabel Inventaris & Transaksi: bungkus tabel dengan `<div className="w-full overflow-x-auto">` dan sesuaikan padding sel menjadi `px-2.5 sm:px-4 py-2.5 sm:py-3 text-[11px] sm:text-xs`.
