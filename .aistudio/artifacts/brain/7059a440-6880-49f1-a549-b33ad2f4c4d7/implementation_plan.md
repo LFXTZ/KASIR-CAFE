@@ -1,60 +1,62 @@
-# Owner & Founder Dashboard: Perbaikan Grafik Analitik & Responsivitas Mobile
+# Implementasi Filter Periode Waktu pada Owner Dashboard (Elexa Cafe)
 
-Perbaikan komprehensif pada halaman Owner & Founder Dashboard Elexa Cafe agar grafik tren penjualan per jam terisi data visual yang akurat serta tata letak seluruh komponen (kartu KPI, navigasi sub-menu, dan tabel transaksi/inventaris) tampil responsif dan nyaman digunakan di layar HP.
+Rencana penambahan kendali filter periode waktu (**Hari Ini**, **1 Minggu**, **1 Bulan**, **Semua**) pada antarmuka Owner Dashboard Elexa Cafe untuk menyaring data Riwayat Transaksi dan menghitung ulang kartu KPI analitik finansial secara dinamis dan responsif di layar mobile.
 
 ## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> Keputusan desain berikut telah dikonfirmasi pada tahap klarifikasi:
-> - **Format Tampilan Tabel di Mobile**: Menggunakan pembungkus tabel scroll horizontal (`w-full overflow-x-auto`) dengan ukuran padding sel yang kompak (`px-2.5 sm:px-4 py-2 sm:py-3 text-[11px] sm:text-xs`) agar data inventaris dan riwayat transaksi tetap lengkap, tabular, dan mudah dipindai di HP.
-> - **Visual Grafik Tren Penjualan**: Menggunakan visualisasi batang vertikal modern dengan aksen gradien *emerald green*, efek *hover tooltip*, label nominal Rupiah, dan indikator jumlah porsi per jam.
+> Keputusan desain berikut telah dikonfirmasi pada tahap tanya-jawab:
+> - **Gaya Tampilan Filter**: Tombol segmen horizontal dengan scroll halus (`overflow-x-auto no-scrollbar whitespace-nowrap gap-1.5`) di bawah navigasi tab atau di header section dashboard.
+> - **Cakupan Efek Filter**: Filter periode waktu akan memperbarui kartu KPI statistik atas (Total Omzet, Laba Kotor, Modal HPP, Rata-rata Keranjang/AOV, dan Jumlah Transaksi) serta menyaring daftar baris pada tabel **Riwayat Transaksi**.
 
 ---
 
 ## 1. Overview & Core Concept
 
 - **Apa yang Dikerjakan**:
-  1. **Grafik Analitik Terisi**: Mengisi data tren penjualan per jam (08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00) dengan fallback mock data transaksi hari ini bernilai total Rp 688.000 dari transaksi realistis, sehingga batang grafik tidak kosong.
-  2. **Responsivitas Layar HP**:
-     - Grid KPI statistik berubah dari 4 kolom menjadi 1 kolom di HP, 2 kolom di tablet, dan 4 kolom di layar lebar (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`).
-     - Sub-menu navigasi (*Analitik & Laba*, *Inventaris & Produk*, *Riwayat Transaksi*, *Staff & Kasir*) dilengkapi `overflow-x-auto no-scrollbar whitespace-nowrap` agar dapat digeser mulus tanpa terpotong di layar HP.
-     - Tabel inventaris produk dan riwayat transaksi dibungkus dalam container `w-full overflow-x-auto` dengan padding sel mobile yang proporsional.
-     - Kontainer utama dashboard diamankan dengan `max-w-full overflow-x-hidden` untuk mencegah scrolling horizontal liar pada browser.
-
-- **Target Persona**: Owner, Founder, dan Cafe Manager yang memantau performa penjualan, laba kotor, dan ketersediaan stok produk baik dari laptop maupun langsung melalui smartphone.
+  1. **Komponen Pemilih Periode Waktu**: Tombol segmen horizontal 4 opsi:
+     - `today`: "Hari Ini" (Default)
+     - `week`: "1 Minggu" (7 Hari Terakhir)
+     - `month`: "1 Bulan" (30 Hari Terakhir)
+     - `all`: "Semua" (Seluruh Riwayat Transaksi)
+  2. **Data Multi-Hari yang Kaya**: Menambahkan transaksi historis realistis (kemarin, 3 hari lalu, 5 hari lalu, 12 hari lalu, 20 hari lalu) di `INITIAL_ORDERS` agar ketika owner memilih "1 Minggu", "1 Bulan", atau "Semua", tabel riwayat dan metrik keuangan menampilkan kenaikan angka yang nyata dan akurat.
+  3. **Penghitungan Metrik Dinamis**:
+     - Menghitung omzet, laba kotor, HPP, jumlah pesanan, dan AOV sesuai rentang tanggal yang aktif.
+     - Menyaring tabel riwayat transaksi secara real-time.
+  4. **Antarmuka Mobile-First**:
+     - Menggunakan kontainer `overflow-x-auto no-scrollbar whitespace-nowrap` yang mulus di HP tanpa memakan ruang vertikal berlebih.
+     - Penanda visual aktif dengan latar belakang emerald kontras tinggi dan teks tebal.
 
 ---
 
 ## 2. User Experience & Visual Design
 
-### Alur Tampilan di Layar Mobile:
-1. **Header Dashboard**:
-   - Judul "Owner & Founder Dashboard" dan subteks ringkas tertata rapi di bagian atas.
-   - Baris tab navigasi dapat di-swipe secara horizontal dengan touch gesture alami tanpa merusak layout.
-2. **Kartu KPI Finansial**:
-   - Tersusun vertikal 1 kolom di layar HP dengan margin yang konsisten:
-     * *Omzet Hari Ini*: Rp 688.000
-     * *Laba Kotor (Gross Profit)*: Ditampilkan jelas beserta modal HPP
-     * *Rata-Rata Keranjang (AOV)*: Basket size pelanggan
-     * *Peringatan Stok Menipis*: Badge peringatan untuk stok kritis &le; 5 unit
-3. **Grafik Tren Penjualan Per Jam**:
-   - Bar chart vertikal adaptif dengan tinggi proporsional dan warna gradien emerald.
-   - Slot jam: `08:00`, `10:00`, `12:00`, `14:00`, `16:00`, `18:00`, `20:00`.
-   - Tooltip interaktif menampilkan total omzet dan porsi terjual pada jam terkait.
-4. **Tabel Inventaris & Riwayat Transaksi**:
-   - Tabel dapat digeser ke samping dengan halus tanpa membuat seluruh halaman web melebar.
-   - Tombol aksi (Edit, Hapus, Lihat Struk) memiliki ukuran tap minimal 36px untuk kenyamanan sentuhan jari di HP.
+### Alur Tampilan Pengguna:
+1. **Header & Sub-Bar Filter**:
+   - Di bawah header dashboard, terdapat bar horizontal filter periode dengan ikon kalender/waktu dan 4 tombol segmen:
+     * `[ Hari Ini ]` (Aktif secara default)
+     * `[ 1 Minggu ]` (7 Hari)
+     * `[ 1 Bulan ]` (30 Hari)
+     * `[ Semua ]` (Audit Penuh)
+2. **Reaktivitas Instan**:
+   - Saat owner mengetuk "1 Minggu":
+     * Kartu Omzet berubah merefleksikan omzet 7 hari terakhir (misal: Rp 3.250.000).
+     * Kartu Laba Kotor & HPP ikut terhitung ulang secara proporsional.
+     * Tabel Riwayat Transaksi langsung menampilkan transaksi dari rentang 7 hari terakhir.
+     * Teks deskripsi kartu KPI menyesuaikan (misal: *"Akumulasi 7 hari terakhir"*).
+3. **Responsivitas HP**:
+   - Bar filter dapat digeser ke samping dengan sentuhan jari tanpa memicu overflow halaman utama.
 
 ---
 
 ## 3. Key Product Decisions & Trade-Offs
 
-- **Keputusan 1: Fallback Analytics Engine**:
-  - *Pendekatan*: Menghitung analitik secara dinamis dari order hari ini di LocalStorage/Express API. Jika order hari ini masih kosong atau di bawah nilai target demo, gunakan dataset default terkalibrasi (total Rp 688.000, laba kotor proporsional, serta distribusi per jam 08:00 - 20:00).
-  - *Alasan*: Menjamin tampilan awal dashboard langsung memukau dan informatif bagi owner kafe saat pertama kali dibuka atau dijalankan statis di GitHub Pages.
-- **Keputusan 2: Scroll Horizontal Khusus Tabel vs. Kartu Terpisah**:
-  - *Pendekatan*: Mempertahankan struktur tabel data dengan pembungkus `overflow-x-auto` dan padding kompak, didukung label kolom sticky/jelas.
-  - *Alasan*: Pengguna memilih tampilan tabel kompak agar dapat membandingkan harga jual, HPP, margin laba, dan stok secara langsung dalam satu pandangan.
+- **Keputusan 1: Penghitungan Client-Side Instan & Sinkronisasi API**:
+  - *Pendekatan*: Menghitung filter periode waktu langsung dari array pesanan (`orders`) di state React dengan fungsi pembantu waktu `isWithinPeriod(orderDate, period)`.
+  - *Alasan*: Memberikan respons instan tanpa delay jaringan (0ms latency), bekerja 100% sempurna baik di localhost Express maupun saat dijalankan statis di GitHub Pages.
+- **Keputusan 2: Penambahan Mock Transaksi Multi-Hari**:
+  - *Pendekatan*: Melengkapi `INITIAL_ORDERS` dengan transaksi bervariasi rentang 1 s.d. 25 hari lalu.
+  - *Alasan*: Mencegah tampilan kosong saat owner mengganti filter ke "1 Minggu" atau "1 Bulan", memberikan demonstrasi analitik kafe yang hidup dan profesional.
 
 ---
 
@@ -63,33 +65,33 @@ Perbaikan komprehensif pada halaman Owner & Founder Dashboard Elexa Cafe agar gr
 ```
 ┌────────────────────────────────────────────────────────┐
 │                   OwnerDashboard                       │
-│  (max-w-full overflow-x-hidden flex flex-col h-full)   │
+│  State: activePeriod ('today' | 'week' | 'month' | 'all')│
 └──────────────────────────┬─────────────────────────────┘
                            │
-      ┌────────────────────┴────────────────────┐
-      ▼                                         ▼
-┌───────────────────────────────┐ ┌───────────────────────────────┐
-│     Sticky/In-Flow Header     │ │   Horizontal Scroll Tabs      │
-│  - Title & Akses Penuh Badge  │ │   flex overflow-x-auto        │
-│  - Refresh Button             │ │   no-scrollbar whitespace-nowrap│
-└───────────────────────────────┘ └─────────────┬─────────────────┘
-                                                │
-         ┌───────────────────┬──────────────────┴───────────────┬───────────────────┐
-         ▼                   ▼                                  ▼                   ▼
-┌──────────────────┐ ┌──────────────────┐             ┌──────────────────┐ ┌──────────────────┐
-│  Tab Analytics   │ │  Tab Inventaris  │             │   Tab Riwayat    │ │    Tab Staff     │
-│ 1-col mobile KPI │ │ Table with       │             │ Table with       │ │ User Cards Grid  │
-│ Hourly Bar Chart │ │ overflow-x-auto  │             │ overflow-x-auto  │ │ Role RBAC        │
-│ (8h-20h slots)   │ │ compact padding  │             │ compact padding  │ │ Add Staff Modal  │
-└──────────────────┘ └──────────────────┘             └──────────────────┘ └──────────────────┘
+         ┌─────────────────┴─────────────────┐
+         ▼                                   ▼
+┌───────────────────────────────┐   ┌───────────────────────────────┐
+│     Period Segment Bar        │   │    Filtered Metrics Engine    │
+│  [Hari Ini] [1 Minggu]        │   │ - Filter orders by created_at │
+│  [1 Bulan]  [Semua]           │   │ - Recompute Omzet, GP, AOV    │
+└───────────────────────────────┘   └───────────────┬───────────────┘
+                                                    │
+                 ┌──────────────────────────────────┴──────────────────┐
+                 ▼                                                     ▼
+┌───────────────────────────────────┐               ┌───────────────────────────────────┐
+│           KPI Cards               │               │        Riwayat Transaksi          │
+│ - Omzet Periode Terpilih          │               │ - Filtered orders table           │
+│ - Laba Kotor & Modal HPP          │               │ - Compact horizontal scroll       │
+│ - AOV & Count Transaksi           │               │ - Detail modal struk tetap aktif  │
+└───────────────────────────────────┘               └───────────────────────────────────┘
 ```
 
 ### Rincian Perubahan File:
-1. `src/services/storageService.ts`:
-   - Kalibrasi fungsi `computeLocalAnalytics()` agar mengembalikan fallback `hourly_sales` (08:00: Rp 76.000, 10:00: Rp 120.000, 12:00: Rp 210.000, 14:00: Rp 95.000, 16:00: Rp 64.000, 18:00: Rp 85.000, 20:00: Rp 38.000 = total Rp 688.000) jika transaksi hari ini belum ada, atau mengakumulasikan transaksi riil.
+1. `src/data/mockData.ts`:
+   - Tambahkan transaksi historis (2 hari lalu, 5 hari lalu, 12 hari lalu, 22 hari lalu) dengan item menu, metode bayar (QRIS, Tunai, Kartu), dan nominal realistis.
 2. `src/components/dashboard/OwnerDashboard.tsx`:
-   - Kontainer root: tambahkan `max-w-full overflow-x-hidden`.
-   - Sub-menu tabs container: tambahkan kelas `flex items-center overflow-x-auto no-scrollbar whitespace-nowrap`.
-   - KPI Cards: pastikan kelas responsif `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`.
-   - Grafik Penjualan Per Jam: optimalkan rendering batang vertikal modern dengan tinggi dinamis, label Rupiah dan jumlah transaksi/porsi, serta status responsif di layar kecil.
-   - Tabel Inventaris & Transaksi: bungkus tabel dengan `<div className="w-full overflow-x-auto">` dan sesuaikan padding sel menjadi `px-2.5 sm:px-4 py-2.5 sm:py-3 text-[11px] sm:text-xs`.
+   - Tambahkan state `selectedPeriod: 'today' | 'week' | 'month' | 'all'`.
+   - Buat logika filtering pesanan berdasarkan tanggal `created_at`.
+   - Hitung metrik dinamis: `filteredOrders`, `periodRevenue`, `periodCogs`, `periodGrossProfit`, `periodAov`.
+   - Tambahkan bar filter periode waktu responsif dengan styling tab segmen modern dan scroll horizontal tanpa scrollbar kasar di layar HP.
+   - Hubungkan kartu KPI dan tabel Riwayat Transaksi ke data yang telah difilter.

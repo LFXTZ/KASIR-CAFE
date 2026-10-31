@@ -21,6 +21,7 @@ import {
   RefreshCw,
   ShoppingBag,
   Layers,
+  Calendar,
 } from 'lucide-react';
 import {
   fetchAnalyticsApi,
@@ -31,6 +32,8 @@ import {
   getLocalProducts,
 } from '../../services/storageService.ts';
 
+export type TimePeriod = 'today' | 'week' | 'month' | 'all';
+
 export const OwnerDashboard: React.FC = () => {
   const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -38,6 +41,7 @@ export const OwnerDashboard: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [activeTab, setActiveTab] = useState<'analytics' | 'inventory' | 'staff' | 'history'>('analytics');
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('today');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Product Add / Edit Modal state
@@ -210,6 +214,59 @@ export const OwnerDashboard: React.FC = () => {
     }
   };
 
+  // ---------------------------------------------------------------------------
+  // Dynamic Period Filtering & Financial Metrics Engine
+  // ---------------------------------------------------------------------------
+  const now = new Date();
+  const todayStr = now.toISOString().split('T')[0];
+  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  const filteredOrders = orders.filter((o) => {
+    if (o.order_status === 'cancelled') return false;
+    const orderDate = new Date(o.created_at);
+
+    if (selectedPeriod === 'today') {
+      return o.created_at.startsWith(todayStr);
+    }
+    if (selectedPeriod === 'week') {
+      return orderDate >= oneWeekAgo;
+    }
+    if (selectedPeriod === 'month') {
+      return orderDate >= oneMonthAgo;
+    }
+    return true; // 'all'
+  });
+
+  // Calculate dynamic totals for the selected period
+  let periodRevenue = 0;
+  let periodCogs = 0;
+  filteredOrders.forEach((o) => {
+    periodRevenue += o.total_amount;
+    o.items.forEach((it) => {
+      periodCogs += (it.cost_at_purchase || 0) * it.quantity;
+    });
+  });
+
+  // If today has 0 orders, blend with the fallback analytics totals so numbers match the hourly chart
+  if (selectedPeriod === 'today' && (filteredOrders.length === 0 || periodRevenue === 0) && analytics) {
+    periodRevenue = analytics.today_revenue;
+    periodCogs = analytics.today_cogs;
+  }
+
+  const periodGrossProfit = periodRevenue - periodCogs;
+  const periodOrderCount = selectedPeriod === 'today' && filteredOrders.length === 0 && analytics
+    ? analytics.today_orders_count
+    : filteredOrders.length;
+  const periodAov = periodOrderCount > 0 ? Math.round(periodRevenue / periodOrderCount) : 0;
+
+  const PERIOD_OPTIONS: { id: TimePeriod; label: string; description: string }[] = [
+    { id: 'today', label: 'Hari Ini', description: 'Real-time hari ini' },
+    { id: 'week', label: '1 Minggu', description: '7 Hari Terakhir' },
+    { id: 'month', label: '1 Bulan', description: '30 Hari Terakhir' },
+    { id: 'all', label: 'Semua', description: 'Seluruh Riwayat' },
+  ];
+
   return (
     <div className="flex-1 flex flex-col h-full bg-slate-900/95 text-slate-100 overflow-x-hidden max-w-full">
       {/* Top Header */}
@@ -285,6 +342,37 @@ export const OwnerDashboard: React.FC = () => {
         </div>
       </div>
 
+      {/* Time Period Filter Sub-Bar (Active on Analytics & History tabs) */}
+      {(activeTab === 'analytics' || activeTab === 'history') && (
+        <div className="px-4 sm:px-6 py-2.5 bg-slate-900/80 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2 text-xs text-slate-400">
+            <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="font-semibold text-slate-300">Periode Waktu:</span>
+            <span className="text-[11px] text-slate-500 hidden sm:inline">
+              ({PERIOD_OPTIONS.find((p) => p.id === selectedPeriod)?.description})
+            </span>
+          </div>
+
+          {/* Smooth Horizontal Segment Buttons */}
+          <div className="flex items-center p-1 bg-slate-800/90 rounded-xl border border-slate-700/60 overflow-x-auto no-scrollbar whitespace-nowrap gap-1 max-w-full">
+            {PERIOD_OPTIONS.map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setSelectedPeriod(opt.id)}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all shrink-0 ${
+                  selectedPeriod === opt.id
+                    ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Main Tab Content */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-6 max-w-full">
         {/* TAB 1: ANALYTICS & PROFIT */}
@@ -295,16 +383,24 @@ export const OwnerDashboard: React.FC = () => {
               {/* Omzet Card */}
               <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60 flex flex-col justify-between shadow-sm">
                 <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span className="font-medium">Omzet Hari Ini</span>
+                  <span className="font-medium">
+                    {selectedPeriod === 'today'
+                      ? 'Omzet Hari Ini'
+                      : selectedPeriod === 'week'
+                      ? 'Omzet 1 Minggu Terakhir'
+                      : selectedPeriod === 'month'
+                      ? 'Omzet 1 Bulan Terakhir'
+                      : 'Total Omzet Keseluruhan'}
+                  </span>
                   <DollarSign className="w-4 h-4 text-emerald-400" />
                 </div>
                 <div className="my-2">
                   <span className="font-mono-numbers text-2xl font-extrabold text-slate-100">
-                    {formatRupiah(analytics.today_revenue)}
+                    {formatRupiah(periodRevenue)}
                   </span>
                 </div>
                 <span className="text-[11px] text-slate-500">
-                  Dari {analytics.today_orders_count} transaksi berhasil
+                  Dari {periodOrderCount} transaksi berhasil
                 </span>
               </div>
 
@@ -316,11 +412,11 @@ export const OwnerDashboard: React.FC = () => {
                 </div>
                 <div className="my-2">
                   <span className="font-mono-numbers text-2xl font-extrabold text-emerald-400">
-                    {formatRupiah(analytics.today_gross_profit)}
+                    {formatRupiah(periodGrossProfit)}
                   </span>
                 </div>
                 <span className="text-[11px] text-slate-400">
-                  HPP / Modal: {formatRupiah(analytics.today_cogs)}
+                  HPP / Modal: {formatRupiah(periodCogs)}
                 </span>
               </div>
 
@@ -332,11 +428,11 @@ export const OwnerDashboard: React.FC = () => {
                 </div>
                 <div className="my-2">
                   <span className="font-mono-numbers text-2xl font-extrabold text-sky-300">
-                    {formatRupiah(analytics.average_order_value)}
+                    {formatRupiah(periodAov)}
                   </span>
                 </div>
                 <span className="text-[11px] text-slate-500">
-                  Basket size per pelanggan
+                  Basket size per pelanggan ({selectedPeriod === 'today' ? 'Hari Ini' : PERIOD_OPTIONS.find((p) => p.id === selectedPeriod)?.label})
                 </span>
               </div>
 
@@ -553,9 +649,16 @@ export const OwnerDashboard: React.FC = () => {
         {/* TAB 3: TRANSACTION AUDIT LOG */}
         {activeTab === 'history' && (
           <div className="space-y-4">
-            <div>
-              <h3 className="font-bold text-sm text-slate-100">Riwayat Transaksi Global & Audit Log</h3>
-              <span className="text-xs text-slate-400">Audit seluruh pesanan masuk, status bayar, dan kasir</span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="font-bold text-sm text-slate-100">Riwayat Transaksi Global & Audit Log</h3>
+                <span className="text-xs text-slate-400">
+                  Audit seluruh pesanan masuk, status bayar, dan kasir ({PERIOD_OPTIONS.find((p) => p.id === selectedPeriod)?.label})
+                </span>
+              </div>
+              <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg self-start sm:self-auto">
+                {filteredOrders.length} Transaksi Ditemukan
+              </span>
             </div>
 
             {/* History Table Container with Horizontal Scroll */}
@@ -575,7 +678,7 @@ export const OwnerDashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-700/40">
-                    {orders.map((ord) => (
+                    {filteredOrders.map((ord) => (
                       <tr key={ord.id} className="hover:bg-slate-700/30 transition-colors">
                         <td className="py-2.5 sm:py-3 px-3 sm:px-4 font-mono font-bold text-emerald-400">{ord.order_number}</td>
                         <td className="py-2.5 sm:py-3 px-3 sm:px-4 text-slate-400 text-[11px]">{formatDateTime(ord.created_at)}</td>
@@ -613,6 +716,13 @@ export const OwnerDashboard: React.FC = () => {
                         </td>
                       </tr>
                     ))}
+                    {filteredOrders.length === 0 && (
+                      <tr>
+                        <td colSpan={8} className="py-8 text-center text-slate-400 text-xs">
+                          Tidak ada riwayat transaksi pada periode {PERIOD_OPTIONS.find((p) => p.id === selectedPeriod)?.label.toLowerCase()}.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

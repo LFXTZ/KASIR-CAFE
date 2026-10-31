@@ -1,6 +1,6 @@
 {
-  "summary":  "Rencana implementasi perbaikan halaman Owner & Founder Dashboard Elexa Cafe:\n- Pengisian dataset grafik tren penjualan per jam (Hari Ini) dengan data realistis Rp 688.000 dari 5 transaksi (08:00 - 20:00).\n- Penyesuaian layout grid statistik menjadi 1 kolom di mobile (grid-cols-1 sm:grid-cols-2 lg:grid-cols-4).\n- Navigasi sub-menu scrollable horizontal tanpa scrollbar kasar di layar HP.\n- Pembungkusan tabel inventaris & riwayat transaksi dengan container overflow-x-auto dan padding sel kompak.\n- Penambahan max-w-full overflow-x-hidden pada pembungkus utama dashboard.",
-  "updatedAt":  "2026-10-30T00:05:44.634742454Z",
+  "summary":  "Rencana implementasi fitur filter periode waktu pada Owner Dashboard (Elexa Cafe):\n- Pembuatan filter periode waktu (Hari Ini, 1 Minggu, 1 Bulan, Semua) dengan tombol segmen horizontal scrollable (`overflow-x-auto no-scrollbar`).\n- Perhitungan statistik finansial dinamis (Omzet, Laba Kotor, HPP, AOV, Total Transaksi) dan penyaringan tabel Riwayat Transaksi berdasarkan rentang waktu yang dipilih.\n- Penambahan mock data transaksi masa lalu (3 hari lalu, 6 hari lalu, 14 hari lalu, 25 hari lalu) agar penyaringan 1 Minggu, 1 Bulan, dan Semua menghasilkan pergerakan data yang nyata dan kaya.\n- Desain mobile-friendly yang rapi tanpa memotong layout.",
+  "updatedAt":  "2026-10-31T11:30:36.919245217Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

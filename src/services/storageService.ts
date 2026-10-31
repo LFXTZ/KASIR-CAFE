@@ -85,6 +85,16 @@ export function initializeStorage(): void {
     const rawOrders = localStorage.getItem(STORAGE_KEYS.ORDERS);
     if (!rawOrders || rawOrders === 'null' || rawOrders === 'undefined' || rawOrders.trim() === '[]') {
       localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(INITIAL_ORDERS));
+    } else {
+      const parsedOrders = JSON.parse(rawOrders);
+      if (Array.isArray(parsedOrders) && parsedOrders.length < INITIAL_ORDERS.length) {
+        // Merge missing initial mock orders by ID
+        const existingIds = new Set(parsedOrders.map((o: Order) => o.id));
+        const missing = INITIAL_ORDERS.filter((o) => !existingIds.has(o.id));
+        if (missing.length > 0) {
+          localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify([...parsedOrders, ...missing]));
+        }
+      }
     }
   } catch {
     localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(INITIAL_ORDERS));
