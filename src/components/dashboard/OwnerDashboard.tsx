@@ -211,29 +211,29 @@ export const OwnerDashboard: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full w-full max-w-full overflow-x-hidden bg-slate-900/95 text-slate-100">
+    <div className="flex-1 flex flex-col h-full bg-slate-900/95 text-slate-100 overflow-x-hidden max-w-full">
       {/* Top Header */}
-      <div className="px-4 sm:px-6 py-4 border-b border-slate-800 bg-slate-900/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0 max-w-full">
+      <div className="px-4 sm:px-6 py-4 border-b border-slate-800 bg-slate-900/90 flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 max-w-full">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+          <h2 className="text-base font-bold text-white flex items-center gap-2 flex-wrap">
             Owner & Founder Dashboard
             <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">
               Akses Penuh / Admin
             </span>
           </h2>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-slate-400 block mt-0.5">
             Analitik keuangan, margin laba kotor, manajemen stok, dan staff kasir
           </span>
         </div>
 
-        {/* Tab Controls */}
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <div className="flex items-center p-1 bg-slate-800 rounded-xl border border-slate-700/60 overflow-x-auto no-scrollbar whitespace-nowrap max-w-full flex-1 sm:flex-initial">
+        {/* Tab Controls - Horizontally Scrollable on Mobile with no-scrollbar */}
+        <div className="flex items-center gap-2 w-full md:w-auto overflow-hidden">
+          <div className="flex items-center p-1 bg-slate-800 rounded-xl border border-slate-700/60 overflow-x-auto no-scrollbar whitespace-nowrap max-w-full flex-1 md:flex-initial">
             <button
               onClick={() => setActiveTab('analytics')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-all ${
                 activeTab === 'analytics'
-                  ? 'bg-emerald-500 text-slate-950 font-bold'
+                  ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -244,7 +244,7 @@ export const OwnerDashboard: React.FC = () => {
               onClick={() => setActiveTab('inventory')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-all ${
                 activeTab === 'inventory'
-                  ? 'bg-emerald-500 text-slate-950 font-bold'
+                  ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -255,7 +255,7 @@ export const OwnerDashboard: React.FC = () => {
               onClick={() => setActiveTab('history')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-all ${
                 activeTab === 'history'
-                  ? 'bg-emerald-500 text-slate-950 font-bold'
+                  ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -266,7 +266,7 @@ export const OwnerDashboard: React.FC = () => {
               onClick={() => setActiveTab('staff')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-all ${
                 activeTab === 'staff'
-                  ? 'bg-emerald-500 text-slate-950 font-bold'
+                  ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -277,8 +277,8 @@ export const OwnerDashboard: React.FC = () => {
 
           <button
             onClick={fetchDashboardData}
-            title="Muat Ulang Data"
-            className="p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors shrink-0"
+            title="Muat ulang data"
+            className="p-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700 shrink-0 transition-colors"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
@@ -286,16 +286,16 @@ export const OwnerDashboard: React.FC = () => {
       </div>
 
       {/* Main Tab Content */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden p-3.5 sm:p-6 space-y-6 max-w-full">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-6 max-w-full">
         {/* TAB 1: ANALYTICS & PROFIT */}
         {activeTab === 'analytics' && analytics && (
           <div className="space-y-6">
             {/* KPI Cards Strip */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Omzet Card */}
-              <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60 flex flex-col justify-between">
+              <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60 flex flex-col justify-between shadow-sm">
                 <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span>Omzet Hari Ini</span>
+                  <span className="font-medium">Omzet Hari Ini</span>
                   <DollarSign className="w-4 h-4 text-emerald-400" />
                 </div>
                 <div className="my-2">
@@ -309,7 +309,7 @@ export const OwnerDashboard: React.FC = () => {
               </div>
 
               {/* Laba Kotor Card */}
-              <div className="p-4 rounded-2xl bg-slate-800/80 border border-emerald-500/30 flex flex-col justify-between ring-1 ring-emerald-500/20">
+              <div className="p-4 rounded-2xl bg-slate-800/80 border border-emerald-500/30 flex flex-col justify-between ring-1 ring-emerald-500/20 shadow-sm">
                 <div className="flex items-center justify-between text-xs text-emerald-400">
                   <span className="font-semibold">Laba Kotor (Gross Profit)</span>
                   <TrendingUp className="w-4 h-4" />
@@ -325,9 +325,9 @@ export const OwnerDashboard: React.FC = () => {
               </div>
 
               {/* AOV Card */}
-              <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60 flex flex-col justify-between">
+              <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60 flex flex-col justify-between shadow-sm">
                 <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span>Rata-Rata Keranjang (AOV)</span>
+                  <span className="font-medium">Rata-Rata Keranjang (AOV)</span>
                   <ShoppingBag className="w-4 h-4 text-sky-400" />
                 </div>
                 <div className="my-2">
@@ -341,9 +341,9 @@ export const OwnerDashboard: React.FC = () => {
               </div>
 
               {/* Low Stock Warning Card */}
-              <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60 flex flex-col justify-between">
+              <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60 flex flex-col justify-between shadow-sm">
                 <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span>Peringatan Stok Menipis</span>
+                  <span className="font-medium">Peringatan Stok Menipis</span>
                   <AlertTriangle className="w-4 h-4 text-amber-400" />
                 </div>
                 <div className="my-2">
@@ -360,74 +360,75 @@ export const OwnerDashboard: React.FC = () => {
             {/* Sales Chart & Top Selling */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Hourly Sales Bar Representation */}
-              <div className="lg:col-span-2 p-4 sm:p-5 rounded-2xl bg-slate-800/80 border border-slate-700/60 space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="lg:col-span-2 p-4 sm:p-5 rounded-2xl bg-slate-800/80 border border-slate-700/60 space-y-4 shadow-sm overflow-hidden">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
                     <h4 className="font-bold text-sm text-slate-100">Tren Penjualan Per Jam (Hari Ini)</h4>
-                    <span className="text-xs text-slate-400">
-                      Total {formatRupiah(analytics.hourly_sales.reduce((sum, s) => sum + s.sales, 0))} · {analytics.hourly_sales.reduce((sum, s) => sum + s.count, 0)} porsi terjual
-                    </span>
+                    <span className="text-[11px] text-slate-400">Distribusi omzet kafe dari pagi hingga malam</span>
                   </div>
-                  <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                    {analytics.today_orders_count} Transaksi Hari Ini
+                  <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                    Total: {formatRupiah(analytics.today_revenue)}
                   </span>
                 </div>
 
-                <div className="pt-4 pb-2">
-                  <div className="h-60 sm:h-64 flex items-end justify-between gap-2 sm:gap-3.5 pb-2 px-1 sm:px-3 border-b border-slate-700/60">
-                    {analytics.hourly_sales.map((slot) => {
-                      const maxVal = Math.max(...analytics.hourly_sales.map((s) => s.sales), 100000);
-                      const heightPercent = Math.max(12, Math.round((slot.sales / maxVal) * 100));
+                {/* Modern vertical bar chart with emerald gradient */}
+                <div className="h-60 flex items-end justify-between gap-1 sm:gap-3 pt-8 pb-3 px-1 sm:px-3 border-b border-slate-700/50 overflow-x-auto no-scrollbar">
+                  {analytics.hourly_sales.map((slot) => {
+                    const maxVal = Math.max(...analytics.hourly_sales.map((s) => s.sales), 100000);
+                    // Ensure at least 12% height so empty bars are still visually marked
+                    const heightPercent = slot.sales > 0 ? Math.max(12, Math.round((slot.sales / maxVal) * 100)) : 4;
 
-                      return (
-                        <div key={slot.hour} className="flex-1 flex flex-col items-center gap-1.5 sm:gap-2 group h-full justify-end">
-                          {/* Value tooltip & portion label */}
-                          <div className="flex flex-col items-center opacity-70 group-hover:opacity-100 transition-opacity mb-1 text-center pointer-events-none">
-                            <span className="text-[9px] sm:text-[10px] font-mono-numbers font-bold text-emerald-400 whitespace-nowrap bg-slate-900/80 px-1 py-0.5 rounded border border-emerald-500/20">
-                              {formatRupiah(slot.sales)}
-                            </span>
-                            <span className="text-[8px] sm:text-[9px] text-slate-400 whitespace-nowrap">
-                              {slot.count} porsi
-                            </span>
-                          </div>
-
-                          {/* Gradient Vertical Bar */}
+                    return (
+                      <div key={slot.hour} className="flex-1 min-w-[36px] flex flex-col items-center gap-2 group relative">
+                        {/* Tooltip on hover/focus */}
+                        <div className="absolute -top-7 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-slate-950 text-slate-200 border border-slate-700 text-[10px] px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap z-10 font-mono-numbers">
+                          {formatRupiah(slot.sales)}
+                        </div>
+                        
+                        <div className="w-full flex justify-center h-40 items-end">
                           <div
                             style={{ height: `${heightPercent}%` }}
-                            className="w-full max-w-[40px] bg-gradient-to-t from-emerald-600 via-emerald-500 to-emerald-400 rounded-t-lg sm:rounded-t-xl transition-all duration-300 group-hover:from-emerald-500 group-hover:to-emerald-300 shadow-md shadow-emerald-500/10 group-hover:shadow-emerald-500/30"
-                          />
-
-                          {/* Hour Label */}
-                          <span className="text-[10px] sm:text-[11px] font-mono text-slate-400 group-hover:text-emerald-400 font-medium transition-colors">
-                            {slot.hour}
-                          </span>
+                            className={`w-full max-w-[38px] rounded-t-lg transition-all duration-300 relative group-hover:brightness-110 ${
+                              slot.sales > 0
+                                ? 'bg-gradient-to-t from-emerald-600 to-emerald-400 shadow-sm shadow-emerald-500/20'
+                                : 'bg-slate-700/40'
+                            }`}
+                          >
+                            {slot.count > 0 && (
+                              <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[9px] font-mono text-emerald-300/80 hidden sm:block">
+                                {slot.count}x
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                  <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-500 pt-2 px-1">
-                    <span>Mulai 08:00 WIB</span>
-                    <span className="text-emerald-500/80 font-medium">Jam Operasional Kafe</span>
-                    <span>Tutup 21:00 WIB</span>
-                  </div>
+
+                        <span className="text-[10px] sm:text-[11px] font-mono text-slate-400">{slot.hour}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                  <span>* Jam operasional: 08:00 - 20:00 WIB</span>
+                  <span className="text-emerald-400 font-medium">Auto-update setiap pesanan</span>
                 </div>
               </div>
 
               {/* Top Selling Products */}
-              <div className="p-5 rounded-2xl bg-slate-800/80 border border-slate-700/60 space-y-4">
+              <div className="p-4 sm:p-5 rounded-2xl bg-slate-800/80 border border-slate-700/60 space-y-4 shadow-sm">
                 <h4 className="font-bold text-sm text-slate-100">Menu Terlaris Hari Ini</h4>
                 <div className="space-y-3">
                   {analytics.top_products.map((top, idx) => (
                     <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
-                      <div>
-                        <span className="text-xs font-semibold text-slate-200 block truncate max-w-[150px]">
+                      <div className="min-w-0 pr-2">
+                        <span className="text-xs font-semibold text-slate-200 block truncate">
                           {top.name}
                         </span>
                         <span className="text-[11px] text-slate-400">
                           {top.sold_qty} porsi terjual
                         </span>
                       </div>
-                      <span className="font-mono-numbers text-xs font-bold text-emerald-400">
+                      <span className="font-mono-numbers text-xs font-bold text-emerald-400 shrink-0">
                         {formatRupiah(top.total_revenue)}
                       </span>
                     </div>
@@ -444,7 +445,7 @@ export const OwnerDashboard: React.FC = () => {
         {/* TAB 2: INVENTORY & PRODUCTS CRUD */}
         {activeTab === 'inventory' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="font-bold text-sm text-slate-100">Katalog Produk & Manajemen Stok</h3>
                 <span className="text-xs text-slate-400">Total {products.length} item aktif di inventaris</span>
@@ -452,97 +453,99 @@ export const OwnerDashboard: React.FC = () => {
               <button
                 type="button"
                 onClick={handleOpenAddProduct}
-                className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
+                className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 w-full sm:w-auto"
               >
                 <Plus className="w-4 h-4" />
                 <span>Tambah Produk Baru</span>
               </button>
             </div>
 
-            {/* Inventory Table */}
-            <div className="w-full overflow-x-auto rounded-2xl border border-slate-700/60 bg-slate-800/80 shadow-lg">
-              <table className="w-full min-w-[640px] text-left text-xs">
-                <thead className="bg-slate-900/80 text-slate-400 border-b border-slate-700/60 uppercase tracking-wider text-[10px] sm:text-[11px]">
-                  <tr>
-                    <th className="py-2.5 sm:py-3 px-2.5 sm:px-4">Produk</th>
-                    <th className="py-2.5 sm:py-3 px-2 sm:px-4">SKU</th>
-                    <th className="py-2.5 sm:py-3 px-2 sm:px-4">Kategori</th>
-                    <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-right">Harga Jual</th>
-                    <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-right">HPP (Modal)</th>
-                    <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-right">Margin</th>
-                    <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-center">Stok</th>
-                    <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-center">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-700/40 text-[11px] sm:text-xs">
-                  {products.map((prod) => {
-                    const cat = categories.find((c) => c.id === prod.category_id);
-                    const margin = prod.price - prod.cost_price;
-                    const marginPercent = prod.price > 0 ? Math.round((margin / prod.price) * 100) : 0;
-                    const isLow = prod.stock <= 5;
+            {/* Inventory Table Container with Horizontal Scroll */}
+            <div className="rounded-2xl border border-slate-700/60 bg-slate-800/80 overflow-hidden shadow-lg w-full">
+              <div className="w-full overflow-x-auto">
+                <table className="w-full text-left text-xs whitespace-nowrap min-w-[640px]">
+                  <thead className="bg-slate-900/80 text-slate-400 border-b border-slate-700/60 uppercase tracking-wider text-[10px] sm:text-[11px]">
+                    <tr>
+                      <th className="py-2.5 sm:py-3 px-3 sm:px-4">Produk</th>
+                      <th className="py-2.5 sm:py-3 px-3 sm:px-4">SKU</th>
+                      <th className="py-2.5 sm:py-3 px-3 sm:px-4">Kategori</th>
+                      <th className="py-2.5 sm:py-3 px-3 sm:px-4 text-right">Harga Jual</th>
+                      <th className="py-2.5 sm:py-3 px-3 sm:px-4 text-right">HPP (Modal)</th>
+                      <th className="py-2.5 sm:py-3 px-3 sm:px-4 text-right">Margin</th>
+                      <th className="py-2.5 sm:py-3 px-3 sm:px-4 text-center">Stok</th>
+                      <th className="py-2.5 sm:py-3 px-3 sm:px-4 text-center">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-700/40">
+                    {products.map((prod) => {
+                      const cat = categories.find((c) => c.id === prod.category_id);
+                      const margin = prod.price - prod.cost_price;
+                      const marginPercent = prod.price > 0 ? Math.round((margin / prod.price) * 100) : 0;
+                      const isLow = prod.stock <= 5;
 
-                    return (
-                      <tr key={prod.id} className="hover:bg-slate-700/30 transition-colors">
-                        <td className="py-2.5 sm:py-3 px-2.5 sm:px-4 font-semibold text-slate-100 flex items-center gap-2.5">
-                          <img
-                            src={prod.image_url}
-                            alt=""
-                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg object-cover bg-slate-900 shrink-0"
-                            onError={(e) => {
-                              (e.target as HTMLElement).style.display = 'none';
-                            }}
-                          />
-                          <span className="truncate max-w-[140px] sm:max-w-[200px]">{prod.name}</span>
-                        </td>
-                        <td className="py-2.5 sm:py-3 px-2 sm:px-4 font-mono text-slate-400 text-[10px] sm:text-xs">{prod.sku}</td>
-                        <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-slate-300">{cat?.name || '-'}</td>
-                        <td className="py-2.5 sm:py-3 px-2 sm:px-4 font-mono-numbers text-right font-bold text-slate-100 whitespace-nowrap">
-                          {formatRupiah(prod.price)}
-                        </td>
-                        <td className="py-2.5 sm:py-3 px-2 sm:px-4 font-mono-numbers text-right text-slate-400 whitespace-nowrap">
-                          {formatRupiah(prod.cost_price)}
-                        </td>
-                        <td className="py-2.5 sm:py-3 px-2 sm:px-4 font-mono-numbers text-right text-emerald-400 font-semibold whitespace-nowrap">
-                          +{marginPercent}%
-                        </td>
-                        <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-center font-mono-numbers whitespace-nowrap">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold ${
-                              prod.stock === 0
-                                ? 'bg-rose-500/20 text-rose-300'
-                                : isLow
-                                ? 'bg-amber-500/20 text-amber-300'
-                                : 'bg-slate-700 text-slate-200'
-                            }`}
-                          >
-                            {prod.stock} unit
-                          </span>
-                        </td>
-                        <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-center whitespace-nowrap">
-                          <div className="flex items-center justify-center gap-1 sm:gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => handleOpenEditProduct(prod)}
-                              className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
-                              title="Edit Produk"
+                      return (
+                        <tr key={prod.id} className="hover:bg-slate-700/30 transition-colors">
+                          <td className="py-2.5 sm:py-3 px-3 sm:px-4 font-semibold text-slate-100 flex items-center gap-2.5">
+                            <img
+                              src={prod.image_url}
+                              alt=""
+                              className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg object-cover bg-slate-900 shrink-0"
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = 'none';
+                              }}
+                            />
+                            <span className="truncate max-w-[160px] sm:max-w-[200px] text-xs">{prod.name}</span>
+                          </td>
+                          <td className="py-2.5 sm:py-3 px-3 sm:px-4 font-mono text-[11px] text-slate-400">{prod.sku}</td>
+                          <td className="py-2.5 sm:py-3 px-3 sm:px-4 text-slate-300 text-xs">{cat?.name || '-'}</td>
+                          <td className="py-2.5 sm:py-3 px-3 sm:px-4 font-mono-numbers text-right font-bold text-slate-100 text-xs">
+                            {formatRupiah(prod.price)}
+                          </td>
+                          <td className="py-2.5 sm:py-3 px-3 sm:px-4 font-mono-numbers text-right text-slate-400 text-xs">
+                            {formatRupiah(prod.cost_price)}
+                          </td>
+                          <td className="py-2.5 sm:py-3 px-3 sm:px-4 font-mono-numbers text-right text-emerald-400 font-semibold text-xs">
+                            +{marginPercent}%
+                          </td>
+                          <td className="py-2.5 sm:py-3 px-3 sm:px-4 text-center font-mono-numbers">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold ${
+                                prod.stock === 0
+                                  ? 'bg-rose-500/20 text-rose-300'
+                                  : isLow
+                                  ? 'bg-amber-500/20 text-amber-300'
+                                  : 'bg-slate-700 text-slate-200'
+                              }`}
                             >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteProduct(prod.id)}
-                              className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors"
-                              title="Hapus Produk"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                              {prod.stock} unit
+                            </span>
+                          </td>
+                          <td className="py-2.5 sm:py-3 px-3 sm:px-4 text-center">
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditProduct(prod)}
+                                title="Edit Produk"
+                                className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteProduct(prod.id)}
+                                title="Hapus Produk"
+                                className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
@@ -555,68 +558,64 @@ export const OwnerDashboard: React.FC = () => {
               <span className="text-xs text-slate-400">Audit seluruh pesanan masuk, status bayar, dan kasir</span>
             </div>
 
-            <div className="w-full overflow-x-auto rounded-2xl border border-slate-700/60 bg-slate-800/80 shadow-lg">
-              <table className="w-full min-w-[680px] text-left text-xs">
-                <thead className="bg-slate-900/80 text-slate-400 border-b border-slate-700/60 uppercase tracking-wider text-[10px] sm:text-[11px]">
-                  <tr>
-                    <th className="py-2.5 sm:py-3 px-2.5 sm:px-4">No. Order</th>
-                    <th className="py-2.5 sm:py-3 px-2 sm:px-4">Waktu</th>
-                    <th className="py-2.5 sm:py-3 px-2 sm:px-4">Pelanggan & Meja</th>
-                    <th className="py-2.5 sm:py-3 px-2 sm:px-4">Kasir</th>
-                    <th className="py-2.5 sm:py-3 px-2 sm:px-4">Metode Bayar</th>
-                    <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-right">Total Transaksi</th>
-                    <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-center">Status</th>
-                    <th className="py-2.5 sm:py-3 px-2 sm:px-4 text-center">Rincian</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-700/40 text-[11px] sm:text-xs">
-                  {orders.map((ord) => (
-                    <tr key={ord.id} className="hover:bg-slate-700/30 transition-colors">
-                      <td className="py-2.5 sm:py-3 px-2.5 sm:px-4 font-mono font-bold text-emerald-400 whitespace-nowrap">{ord.order_number}</td>
-                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-slate-400 whitespace-nowrap">{formatDateTime(ord.created_at)}</td>
-                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-slate-200">
-                        {ord.customer_name} ({ord.table_number || ord.order_type})
-                      </td>
-                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-slate-400 whitespace-nowrap">{ord.cashier_name || 'Kasir'}</td>
-                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 uppercase font-semibold text-slate-300 whitespace-nowrap">
-                        {ord.payment_method}
-                      </td>
-                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 font-mono-numbers text-right font-bold text-slate-100 whitespace-nowrap">
-                        {formatRupiah(ord.total_amount)}
-                      </td>
-                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-center whitespace-nowrap">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
-                            ord.order_status === 'completed'
-                              ? 'bg-emerald-500/20 text-emerald-300'
-                              : ord.order_status === 'ready'
-                              ? 'bg-sky-500/20 text-sky-300'
-                              : 'bg-amber-500/20 text-amber-300'
-                          }`}
-                        >
-                          {ord.order_status}
-                        </span>
-                      </td>
-                      <td className="py-2.5 sm:py-3 px-2 sm:px-4 text-center whitespace-nowrap">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedOrder(ord)}
-                          className="px-2.5 py-1 text-[11px] font-semibold bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition-colors"
-                        >
-                          Lihat Struk
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {orders.length === 0 && (
+            {/* History Table Container with Horizontal Scroll */}
+            <div className="rounded-2xl border border-slate-700/60 bg-slate-800/80 overflow-hidden shadow-lg w-full">
+              <div className="w-full overflow-x-auto">
+                <table className="w-full text-left text-xs whitespace-nowrap min-w-[720px]">
+                  <thead className="bg-slate-900/80 text-slate-400 border-b border-slate-700/60 uppercase tracking-wider text-[10px] sm:text-[11px]">
                     <tr>
-                      <td colSpan={8} className="py-6 text-center text-slate-500">
-                        Belum ada riwayat transaksi yang tercatat
-                      </td>
+                      <th className="py-2.5 sm:py-3 px-3 sm:px-4">No. Order</th>
+                      <th className="py-2.5 sm:py-3 px-3 sm:px-4">Waktu</th>
+                      <th className="py-2.5 sm:py-3 px-3 sm:px-4">Pelanggan & Meja</th>
+                      <th className="py-2.5 sm:py-3 px-3 sm:px-4">Kasir</th>
+                      <th className="py-2.5 sm:py-3 px-3 sm:px-4">Metode Bayar</th>
+                      <th className="py-2.5 sm:py-3 px-3 sm:px-4 text-right">Total Transaksi</th>
+                      <th className="py-2.5 sm:py-3 px-3 sm:px-4 text-center">Status</th>
+                      <th className="py-2.5 sm:py-3 px-3 sm:px-4 text-center">Rincian</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-700/40">
+                    {orders.map((ord) => (
+                      <tr key={ord.id} className="hover:bg-slate-700/30 transition-colors">
+                        <td className="py-2.5 sm:py-3 px-3 sm:px-4 font-mono font-bold text-emerald-400">{ord.order_number}</td>
+                        <td className="py-2.5 sm:py-3 px-3 sm:px-4 text-slate-400 text-[11px]">{formatDateTime(ord.created_at)}</td>
+                        <td className="py-2.5 sm:py-3 px-3 sm:px-4 text-slate-200">
+                          {ord.customer_name} ({ord.table_number || ord.order_type})
+                        </td>
+                        <td className="py-2.5 sm:py-3 px-3 sm:px-4 text-slate-400">{ord.cashier_name || 'Kasir'}</td>
+                        <td className="py-2.5 sm:py-3 px-3 sm:px-4 uppercase font-semibold text-slate-300">
+                          {ord.payment_method}
+                        </td>
+                        <td className="py-2.5 sm:py-3 px-3 sm:px-4 font-mono-numbers text-right font-bold text-slate-100">
+                          {formatRupiah(ord.total_amount)}
+                        </td>
+                        <td className="py-2.5 sm:py-3 px-3 sm:px-4 text-center">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
+                              ord.order_status === 'completed'
+                                ? 'bg-emerald-500/20 text-emerald-300'
+                                : ord.order_status === 'ready'
+                                ? 'bg-sky-500/20 text-sky-300'
+                                : 'bg-amber-500/20 text-amber-300'
+                            }`}
+                          >
+                            {ord.order_status}
+                          </span>
+                        </td>
+                        <td className="py-2.5 sm:py-3 px-3 sm:px-4 text-center">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedOrder(ord)}
+                            className="px-2.5 py-1 text-[11px] font-semibold bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-200 transition-colors"
+                          >
+                            Lihat Struk
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
@@ -624,7 +623,7 @@ export const OwnerDashboard: React.FC = () => {
         {/* TAB 4: STAFF MANAGEMENT */}
         {activeTab === 'staff' && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="font-bold text-sm text-slate-100">Manajemen Pengguna & Kasir (RBAC)</h3>
                 <span className="text-xs text-slate-400">Atur hak akses operasional staff ELEXA CAFE</span>
@@ -632,7 +631,7 @@ export const OwnerDashboard: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsStaffModalOpen(true)}
-                className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
+                className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 w-full sm:w-auto"
               >
                 <Plus className="w-4 h-4" />
                 <span>Tambah Staff Baru</span>
